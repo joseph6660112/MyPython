@@ -1,4 +1,4 @@
-true='1234'
+true=input('請設定密碼')
 for 次數 in range(5):
     密碼=input('請輸入密碼')
     if 密碼 == true:
