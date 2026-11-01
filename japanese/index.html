@@ -115,6 +115,7 @@ h1 .accent { color: var(--ai); margin-left: -8px; }
   font: inherit; font-size: .95rem; cursor: pointer; color: var(--muted);
   background: none; border: 0; border-radius: 8px; padding: 7px 14px;
 }
+.tabs button { padding: 7px 11px; }
 .tabs button[aria-pressed="true"] { background: var(--sheet); color: var(--ai); font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
 select {
   width: 100%; font: inherit; font-size: 1rem; color: var(--ink); background: var(--paper);
@@ -144,6 +145,7 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 .item-main:focus-visible { outline: 2px solid var(--ai); outline-offset: -2px; border-radius: 8px; }
 .chev { display: grid; color: var(--muted); opacity: .55; }
 .chev svg { width: 18px; height: 18px; }
+@media (max-width: 420px) { .item-main .chev { display: none; } }
 .lv {
   display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer;
   font: inherit; font-size: .74rem; font-weight: 700; letter-spacing: .04em;
@@ -275,7 +277,7 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 }
 .nav button small { color: var(--ai); font-size: .8rem; }
 .nav button span { font-family: var(--font-ja); font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nav #next { text-align: right; grid-column: 2; }
+.nav button:last-child { text-align: right; grid-column: 2; }
 .nav button:disabled { visibility: hidden; }
 .title-block { display: grid; gap: 2px; min-width: 0; }
 .eyebrow { font-size: .75rem; letter-spacing: .12em; color: var(--ai); font-weight: 700; }
@@ -312,6 +314,85 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
   .nav button:hover { border-color: var(--ai); }
 }
 .item.playing:hover { background: var(--ai-soft); }
+
+/* 日文換行：在空格處換行，一個詞放不下才從中間斷 */
+.ja, .d-ja, .q-ja, .opt.ja-opt, .bw-ja { word-break: keep-all; overflow-wrap: anywhere; }
+
+/* 教學 */
+.guide-list { display: grid; gap: 10px; }
+.guide-card {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px;
+  width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
+  background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; padding: 16px;
+}
+.g-num {
+  display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px;
+  background: var(--ai-soft); color: var(--ai); font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.g-txt { display: grid; gap: 2px; min-width: 0; }
+.g-txt b { font-size: 1.05rem; }
+.g-txt small { color: var(--muted); font-family: var(--font-ja); font-size: .88rem; }
+.g-head { display: grid; gap: 4px; justify-items: start; }
+.g-head h2 { margin: 0; }
+.g-back { padding: 0 0 6px; }
+.g-sub { margin: 0; color: var(--muted); font-family: var(--font-ja); }
+.g-h { margin: 10px 0 0; font-size: 1.1rem; }
+.g-p { margin: 0; white-space: pre-line; line-height: 1.9; max-width: 40em; }
+.g-p, .g-tip div { font-size: 1rem; }
+.g-p .cho, .g-tip .cho { font-family: var(--font-ja); }
+.g-tip {
+  display: grid; gap: 4px; background: var(--pencil-soft); color: var(--ink);
+  border-radius: 12px; padding: 12px 14px; white-space: pre-line; line-height: 1.85;
+}
+.g-tip-label { font-size: .78rem; font-weight: 700; letter-spacing: .08em; color: var(--pencil); }
+.formula { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; }
+.formula { gap: 6px; }
+.f-part {
+  display: grid; gap: 2px; justify-items: center; text-align: center;
+  background: var(--ai); color: var(--sheet); border-radius: 12px; padding: 8px 9px; min-width: 56px;
+}
+.f-part b { font-family: var(--font-ja); font-size: 1.2rem; font-weight: 700; }
+.f-part small { font-size: .7rem; opacity: .9; white-space: nowrap; }
+@media (min-width: 600px) {
+  .formula { gap: 8px; }
+  .f-part { padding: 10px 14px; min-width: 64px; }
+  .f-part b { font-size: 1.3rem; }
+  .f-part small { font-size: .76rem; }
+}
+.f-part.f-var { background: var(--sheet); color: var(--ai); border: 2px dashed var(--ai); }
+.f-part.f-var small { color: var(--muted); opacity: 1; }
+.breakdown { display: grid; gap: 10px; }
+.bw-row { display: flex; flex-wrap: wrap; background: var(--sheet); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.bw { display: grid; justify-items: center; gap: 2px; padding: 10px 14px; border-right: 1px dashed var(--line); }
+.bw:last-child { border-right: 0; }
+.bw-ja { font-family: var(--font-ja); font-size: 1.3rem; line-height: 1.8; }
+.bw-ja rt { font-size: .45em; color: var(--muted); }
+.bw-zh { font-size: .82rem; color: var(--muted); }
+.pairs { display: grid; gap: 8px; }
+.pair-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ex.pair { background: var(--sheet); border: 1px solid var(--line); }
+.ex.pair { padding: 12px; gap: 8px; }
+.ex.pair .ja { font-size: 1.15rem; }
+.ex.pair .play { width: 30px; height: 30px; }
+@media (max-width: 480px) { .ex.pair .ja { font-size: .98rem; } }
+.rules { display: grid; gap: 6px; }
+.ex.rule-row { grid-template-columns: 6.6em minmax(0, 1fr) auto; background: var(--sheet); border: 1px solid var(--line); }
+.rule { font-size: .85rem; font-weight: 700; color: var(--ai); }
+.g-quiz { gap: 16px; }
+.gq { display: grid; gap: 8px; }
+.gq + .gq { border-top: 1px dashed var(--line); padding-top: 14px; }
+.gq-q { margin: 0; display: flex; gap: 8px; align-items: baseline; font-weight: 700; }
+.gq-n {
+  display: inline-grid; place-items: center; flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--ai-soft); color: var(--ai); font-size: .8rem;
+}
+.gq-listen { justify-self: start; }
+.gq-opts { display: grid; gap: 8px; }
+.gq-opts .opt { padding: 11px 14px; }
+.opt-zh { display: block; font-family: var(--font-zh); font-size: .8rem; color: var(--muted); }
+.gq-why { margin: 0; font-size: .9rem; border-radius: 10px; padding: 8px 12px; }
+.gq-why.ok { background: var(--ok-soft); color: var(--ok); }
+.gq-why.bad { background: var(--bad-soft); color: var(--bad); }
 
 /* 熟練度篩選 */
 .lvbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -445,6 +526,7 @@ kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radi
       <div class="tabs" role="group" aria-label="模式">
         <button type="button" id="tab-learn" aria-pressed="true">學習</button>
         <button type="button" id="tab-quiz" aria-pressed="false">考試</button>
+        <button type="button" id="tab-guide" aria-pressed="false">教學</button>
       </div>
       <label for="unit" hidden>選擇單元</label>
       <select id="unit"></select>
@@ -500,6 +582,7 @@ kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radi
     <p class="tip" id="learn-tip">點任一行就會念出日文。沒有聲音的話，請確認手機沒有開靜音。</p>
     </div>
     <div class="view" id="quiz" hidden></div>
+    <div class="view" id="guide" hidden></div>
   </div>
 </main>
 
@@ -828,6 +911,135 @@ const DETAILS = {
       ex: [{ ja: "こちらは ワットさんです。さくら{大学|だいがく}の {先生|せんせい}です。", zh: "這位是瓦特先生，是櫻花大學的老師。" }] },
   },
 };
+
+// 教學內容。區塊種類：p 段落、h 小標、formula 句型公式、break 逐字拆解、ex 例句、
+// pairs 兩兩比較、rules 規則表、tip 小提醒、quiz 小練習
+// 文字裡可以用 {漢字|かな} 標音，長音會自動畫底線
+const GUIDES = [
+  {
+    id: "chouon", title: "什麼是長音", sub: "把前一個音拉長一拍",
+    blocks: [
+      { t: "p", text: "日文的每個假名大約念一拍。「長音」就是把某個音拉長，多念一拍。\n負責拉長的那個假名不另外發音，只是把前面的母音延長。" },
+      { t: "h", text: "長短不同，意思就不同" },
+      { t: "pairs", items: [
+        [{ ja: "おばさん", zh: "阿姨" }, { ja: "おばあさん", zh: "奶奶" }],
+        [{ ja: "おじさん", zh: "叔叔" }, { ja: "おじいさん", zh: "爺爺" }],
+        [{ ja: "ビル", zh: "大樓" }, { ja: "ビール", zh: "啤酒" }],
+        [{ ja: "ゆき", zh: "雪" }, { ja: "ゆうき", zh: "勇氣" }],
+      ] },
+      { t: "tip", text: "左右兩個都點來聽聽看，有長音的那個會多拖一拍。" },
+      { t: "h", text: "怎麼看出長音" },
+      { t: "rules", items: [
+        { rule: "あ段 ＋ あ", ja: "おかあさん", zh: "媽媽" },
+        { rule: "い段 ＋ い", ja: "おにいさん", zh: "哥哥" },
+        { rule: "う段 ＋ う", ja: "すうがく", zh: "數學" },
+        { rule: "え段 ＋ え", ja: "おねえさん", zh: "姊姊" },
+        { rule: "え段 ＋ い", ja: "せんせい", zh: "老師" },
+        { rule: "お段 ＋ お", ja: "おおきい", zh: "大的" },
+        { rule: "お段 ＋ う", ja: "おとうさん", zh: "爸爸" },
+        { rule: "片假名 ＋ ー", ja: "コーヒー", zh: "咖啡" },
+      ] },
+      { t: "tip", text: "「え段＋い」通常念成 ee：せんせい 念 sen-see。\n「お段＋う」念成 oo：おとうさん 念 o-too-san。\n寫的是「い」「う」，念的時候是把前面的音拉長。" },
+      { t: "p", text: "在這個網站裡，長音都會畫底線，負責拉長的假名是藍色的，例如：せんせい、ありがとう、コーヒー。" },
+      { t: "quiz", items: [
+        { q: "聽聽看，念的是哪一個？", listen: [{ ja: "おばさん", zh: "阿姨" }, { ja: "おばあさん", zh: "奶奶" }] },
+        { q: "聽聽看，念的是哪一個？", listen: [{ ja: "ビル", zh: "大樓" }, { ja: "ビール", zh: "啤酒" }] },
+        { q: "「せんせい」最後的「い」怎麼念？", options: ["清楚念出 i：se-n-se-i", "把前面的 e 拉長：sen-see"], answer: 1, why: "「え段＋い」是長音，念的時候把 e 拉長。" },
+        { q: "下面哪一個有長音？", ja: true, options: ["ここ", "がくせい", "さくら"], answer: 1, why: "がくせい 的「せい」是「え段＋い」。" },
+      ] },
+    ],
+  },
+  {
+    id: "desu", title: "肯定句", sub: "N1 は N2 です（我是學生）",
+    blocks: [
+      { t: "p", text: "最基本的句子：「N1 は N2 です」＝「N1 是 N2」。\nN 代表名詞，例如人、職業、國家。" },
+      { t: "formula", parts: [
+        { ja: "N1", zh: "主題（誰）", v: true }, { ja: "は", zh: "助詞，念 wa" },
+        { ja: "N2", zh: "內容（是什麼）", v: true }, { ja: "です", zh: "是（禮貌）" },
+      ] },
+      { t: "h", text: "一個字一個字看" },
+      { t: "break", words: [
+        { ja: "わたし", zh: "我" }, { ja: "は", zh: "（主題）" }, { ja: "{学生|がくせい}", zh: "學生" }, { ja: "です", zh: "是" },
+      ], full: { ja: "わたしは {学生|がくせい}です。", zh: "我是學生。" } },
+      { t: "tip", text: "日文的順序和中文不一樣：「是」（です）放在最後面。\n「は」當助詞的時候念 wa，不念 ha。" },
+      { t: "h", text: "例句" },
+      { t: "ex", items: [
+        { ja: "わたしは {学生|がくせい}です。", zh: "我是學生。" },
+        { ja: "わたしは たいわん{人|じん}です。", zh: "我是台灣人。" },
+        { ja: "ミラーさんは {会社員|かいしゃいん}です。", zh: "米勒先生是公司職員。" },
+        { ja: "ワンさんは {医者|いしゃ}です。", zh: "王先生是醫生。" },
+      ] },
+      { t: "p", text: "大家都知道在說誰的時候，「わたしは」常常省略，直接說「{学生|がくせい}です」就可以。" },
+      { t: "quiz", items: [
+        { q: "「我是學生」日文怎麼說？", ja: true, options: ["わたしは がくせいです。", "がくせいは わたしです。", "わたしです がくせい。"], answer: 0, why: "順序是 N1（わたし）は N2（がくせい）です。" },
+        { q: "助詞「は」在句子裡念什麼？", options: ["ha", "wa"], answer: 1, why: "當助詞的「は」念 wa。" },
+        { q: "「ワンさんは いしゃです」是什麼意思？", options: ["王先生是醫生。", "王先生不是醫生。", "王先生是醫生嗎？"], answer: 0 },
+      ] },
+    ],
+  },
+  {
+    id: "neg", title: "否定句", sub: "N1 は N2 じゃ ありません（我不是老師）",
+    blocks: [
+      { t: "p", text: "要說「不是」，把句尾的「です」換成「じゃ ありません」。" },
+      { t: "formula", parts: [
+        { ja: "N1", zh: "主題（誰）", v: true }, { ja: "は", zh: "助詞，念 wa" },
+        { ja: "N2", zh: "內容", v: true }, { ja: "じゃ ありません", zh: "不是" },
+      ] },
+      { t: "h", text: "肯定和否定比一比" },
+      { t: "pairs", items: [
+        [{ ja: "{学生|がくせい}です。", zh: "是學生。" }, { ja: "{学生|がくせい}じゃ ありません。", zh: "不是學生。" }],
+        [{ ja: "{先生|せんせい}です。", zh: "是老師。" }, { ja: "{先生|せんせい}じゃ ありません。", zh: "不是老師。" }],
+      ] },
+      { t: "h", text: "「じゃ」和「では」" },
+      { t: "p", text: "「じゃ ありません」是口語，平常說話用。\n「では ありません」比較正式，寫文章或正式場合用。兩個意思一樣。" },
+      { t: "h", text: "例句" },
+      { t: "ex", items: [
+        { ja: "わたしは {先生|せんせい}じゃ ありません。", zh: "我不是老師。" },
+        { ja: "サントスさんは {学生|がくせい}じゃ ありません。", zh: "山多斯先生不是學生。" },
+        { ja: "ミラーさんは {学生|がくせい}では ありません。", zh: "米勒先生不是學生。（比較正式）" },
+        { ja: "いいえ、{学生|がくせい}じゃ ありません。{会社員|かいしゃいん}です。", zh: "不，不是學生，是公司職員。" },
+      ] },
+      { t: "tip", text: "說完「不是」以後，接著說出正確的答案，聽起來會更自然，就像最後一句例句。" },
+      { t: "quiz", items: [
+        { q: "「我不是老師」日文怎麼說？", ja: true, options: ["わたしは せんせいじゃ ありません。", "わたしは せんせいです。", "わたしは せんせいですか。"], answer: 0 },
+        { q: "寫文章、比較正式的時候用哪一個？", ja: true, options: ["じゃ ありません", "では ありません"], answer: 1, why: "「では ありません」比較正式；「じゃ」是口語。" },
+        { q: "「ミラーさんは がくせいじゃ ありません」是什麼意思？", options: ["米勒先生是學生。", "米勒先生不是學生。", "米勒先生也是學生。"], answer: 1 },
+      ] },
+    ],
+  },
+  {
+    id: "q", title: "疑問句", sub: "N1 は N2 ですか（你是學生嗎？）",
+    blocks: [
+      { t: "p", text: "在句子最後加上「か」，就變成問句，像中文的「嗎」。\n念的時候，句尾的語調往上揚。" },
+      { t: "formula", parts: [
+        { ja: "N1", zh: "主題（誰）", v: true }, { ja: "は", zh: "助詞，念 wa" },
+        { ja: "N2", zh: "內容", v: true }, { ja: "ですか", zh: "是～嗎？" },
+      ] },
+      { t: "pairs", items: [
+        [{ ja: "{学生|がくせい}です。", zh: "是學生。" }, { ja: "{学生|がくせい}ですか。", zh: "是學生嗎？" }],
+      ] },
+      { t: "tip", text: "日文正式的寫法，問句最後一樣用「。」，不一定要寫「？」。" },
+      { t: "h", text: "怎麼回答" },
+      { t: "ex", items: [
+        { ja: "ミラーさんは {学生|がくせい}ですか。\n……はい、{学生|がくせい}です。", zh: "米勒先生是學生嗎？\n……是，是學生。" },
+        { ja: "ミラーさんは {学生|がくせい}ですか。\n……いいえ、{学生|がくせい}じゃ ありません。", zh: "米勒先生是學生嗎？\n……不，不是學生。" },
+      ] },
+      { t: "h", text: "用疑問詞問" },
+      { t: "p", text: "想問「誰」「幾歲」的時候，把疑問詞放在答案的位置，句尾一樣是「ですか」。" },
+      { t: "ex", items: [
+        { ja: "あの {人|ひと}は だれですか。", zh: "那個人是誰？" },
+        { ja: "あの {方|かた}は どなたですか。", zh: "那位是哪位？（比較禮貌）" },
+        { ja: "テレーザちゃんは {何歳|なんさい}ですか。\n……9{歳|さい}です。", zh: "泰瑞莎小妹妹幾歲？\n……9 歲。", say: "テレーザちゃんは、なんさいですか。きゅうさいです。" },
+      ] },
+      { t: "tip", text: "有疑問詞的問句不能用「はい」「いいえ」回答，要直接說答案，例如「ワットさんです」。" },
+      { t: "quiz", items: [
+        { q: "把「ミラーさんは がくせいです」改成問句：", ja: true, options: ["ミラーさんは がくせいですか。", "ミラーさんは がくせいじゃ ありません。", "ミラーさんか がくせいです。"], answer: 0 },
+        { q: "別人問「あなたは がくせいですか」，你是學生，要怎麼回答？", ja: true, options: ["はい、がくせいです。", "いいえ、がくせいです。", "はい、がくせいじゃ ありません。"], answer: 0 },
+        { q: "「あの ひとは だれですか」是什麼意思？", options: ["那個人是誰？", "那個人是學生嗎？", "那個人幾歲？"], answer: 0 },
+      ] },
+    ],
+  },
+];
 
 const $ = (id) => document.getElementById(id);
 const store = {
@@ -1640,6 +1852,178 @@ function showResult() {
   $("q-setup").onclick = () => { renderSetup(); window.scrollTo(0, 0); };
 }
 
+// ---- 教學 ----
+// 段落文字：保留換行、支援標音、自動標出長音
+const richText = (s) => toRuby(s);
+// 顯示用：拿掉標音記號，保留原本的空格
+const plainJa = (s) => s.replace(/\{([^|}]+)\|[^}]+\}/g, "$1");
+
+function exButton(ex, extraClass) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "ex" + (extraClass ? " " + extraClass : "");
+  b.innerHTML =
+    '<span class="text"><span class="ja' + (ex.ja.includes("\n") ? " long" : "") + '">' + jaHTML(ex.ja) + "</span>" +
+    '<span class="zh">' + esc(ex.zh) + "</span></span>" +
+    '<span class="play">' + PLAY_ICON + "</span>";
+  b.setAttribute("aria-label", "播放：" + toSpeech(ex.ja));
+  b.addEventListener("click", () => speak(ex.say || toSpeech(ex.ja), b));
+  return b;
+}
+
+function guideBlock(bl) {
+  const el = document.createElement("div");
+  if (bl.t === "p") {
+    el.className = "g-p";
+    el.innerHTML = richText(bl.text);
+  } else if (bl.t === "h") {
+    el.innerHTML = '<h3 class="g-h">' + esc(bl.text) + "</h3>";
+  } else if (bl.t === "tip") {
+    el.className = "g-tip";
+    el.innerHTML = '<span class="g-tip-label">小提醒</span><div>' + richText(bl.text) + "</div>";
+  } else if (bl.t === "formula") {
+    el.className = "formula";
+    el.setAttribute("role", "img");
+    el.setAttribute("aria-label", "句型：" + bl.parts.map((p) => p.ja).join(" "));
+    el.innerHTML = bl.parts.map((p) =>
+      '<span class="f-part' + (p.v ? " f-var" : "") + '"><b>' + esc(p.ja) + "</b><small>" + esc(p.zh) + "</small></span>"
+    ).join("");
+  } else if (bl.t === "break") {
+    el.className = "breakdown";
+    el.innerHTML = '<div class="bw-row">' + bl.words.map((w) =>
+      '<span class="bw"><span class="bw-ja">' + toRuby(w.ja) + '</span><span class="bw-zh">' + esc(w.zh) + "</span></span>"
+    ).join("") + "</div>";
+    el.appendChild(exButton(bl.full));
+  } else if (bl.t === "ex") {
+    el.className = "ex-list";
+    bl.items.forEach((ex) => el.appendChild(exButton(ex)));
+  } else if (bl.t === "pairs") {
+    el.className = "pairs";
+    bl.items.forEach(([a, b]) => {
+      const row = document.createElement("div");
+      row.className = "pair-row";
+      row.appendChild(exButton(a, "pair"));
+      row.appendChild(exButton(b, "pair"));
+      el.appendChild(row);
+    });
+  } else if (bl.t === "rules") {
+    el.className = "rules";
+    bl.items.forEach((r) => {
+      const b = exButton(r, "rule-row");
+      b.insertAdjacentHTML("afterbegin", '<span class="rule">' + esc(r.rule) + "</span>");
+      el.appendChild(b);
+    });
+  } else if (bl.t === "quiz") {
+    el.className = "panel g-quiz";
+    renderGuideQuiz(el, bl.items);
+  }
+  return el;
+}
+
+function renderGuideQuiz(box, items) {
+  box.innerHTML = '<div class="panel-head"><h3>小練習</h3><button type="button" class="link">重新作答</button></div>';
+  box.querySelector(".link").addEventListener("click", () => renderGuideQuiz(box, items));
+  items.forEach((it, qi) => {
+    const wrap = document.createElement("div");
+    wrap.className = "gq";
+    // 聽力題：每次隨機念其中一個
+    let options = it.options, answer = it.answer, isJa = it.ja, sayAnswer = null;
+    if (it.listen) {
+      options = it.listen;
+      answer = Math.floor(Math.random() * it.listen.length);
+      isJa = true;
+      sayAnswer = toSpeech(it.listen[answer].ja);
+    }
+    wrap.innerHTML = '<p class="gq-q"><span class="gq-n">' + (qi + 1) + "</span>" + esc(it.q) + "</p>";
+    if (sayAnswer) {
+      const lb = document.createElement("button");
+      lb.type = "button";
+      lb.className = "pill gq-listen";
+      lb.innerHTML = PLAY_ICON + "<span>播放題目</span>";
+      lb.addEventListener("click", () => speak(sayAnswer, lb));
+      wrap.appendChild(lb);
+    }
+    const opts = document.createElement("div");
+    opts.className = "gq-opts";
+    const why = document.createElement("p");
+    why.className = "gq-why";
+    why.hidden = true;
+    const btns = options.map((o, oi) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "opt" + (isJa ? " ja-opt" : "");
+      const ja = typeof o === "string" ? o : o.ja;
+      b.innerHTML = isJa
+        ? jaHTML(ja) + (typeof o === "object" && o.zh ? '<small class="opt-zh">' + esc(o.zh) + "</small>" : "")
+        : esc(o);
+      b.addEventListener("click", () => {
+        btns.forEach((x) => { x.disabled = true; });
+        const right = oi === answer;
+        btns[answer].classList.add("right");
+        if (!right) b.classList.add("wrong");
+        const ans = options[answer];
+        why.className = "gq-why " + (right ? "ok" : "bad");
+        const ansJa = typeof ans === "string" ? ans : ans.ja;
+        why.textContent = (right ? "答對了！" : "答錯了，正確答案是「" + plainJa(ansJa) + "」。") + (it.why ? " " + it.why : "");
+        why.hidden = false;
+        if (isJa) speak(sayAnswer || toSpeech(ansJa), null);
+      });
+      opts.appendChild(b);
+      return b;
+    });
+    wrap.appendChild(opts);
+    wrap.appendChild(why);
+    box.appendChild(wrap);
+  });
+}
+
+function renderGuide(id) {
+  const box = $("guide");
+  box.innerHTML = "";
+  const idx = GUIDES.findIndex((g) => g.id === id);
+  if (idx < 0) {
+    // 目錄
+    box.innerHTML =
+      '<div class="unit-head"><div class="title-block"><span class="eyebrow">教學・' + GUIDES.length + ' 課</span><h2>文法教學</h2></div></div>' +
+      '<p class="hint">從長音開始，一課一課看下去。每課最後都有小練習。</p>';
+    const list = document.createElement("div");
+    list.className = "guide-list";
+    GUIDES.forEach((g, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "guide-card";
+      b.innerHTML = '<span class="g-num">' + (i + 1) + '</span><span class="g-txt"><b>' + esc(g.title) + "</b><small>" + toRuby(g.sub) + "</small></span>" +
+        '<span class="chev">' + CHEVRON + "</span>";
+      b.addEventListener("click", () => go("guide-" + g.id));
+      list.appendChild(b);
+    });
+    box.appendChild(list);
+    return;
+  }
+  const g = GUIDES[idx];
+  const head = document.createElement("div");
+  head.className = "g-head";
+  head.innerHTML =
+    '<button type="button" class="link g-back">‹ 教學目錄</button>' +
+    '<span class="eyebrow">教學 ' + (idx + 1) + " / " + GUIDES.length + "</span>" +
+    "<h2>" + esc(g.title) + "</h2>" +
+    '<p class="g-sub">' + toRuby(g.sub) + "</p>";
+  head.querySelector(".g-back").addEventListener("click", () => go("guide"));
+  box.appendChild(head);
+  g.blocks.forEach((bl) => box.appendChild(guideBlock(bl)));
+  const nav = document.createElement("div");
+  nav.className = "nav";
+  nav.innerHTML =
+    '<button type="button" id="g-prev"><small>‹ 上一課</small><span></span></button>' +
+    '<button type="button" id="g-next"><small>下一課 ›</small><span></span></button>';
+  box.appendChild(nav);
+  const prev = GUIDES[idx - 1], next = GUIDES[idx + 1];
+  const pb = nav.querySelector("#g-prev"), nb = nav.querySelector("#g-next");
+  pb.disabled = !prev; nb.disabled = !next;
+  if (prev) { pb.querySelector("span").textContent = prev.title; pb.onclick = () => go("guide-" + prev.id); }
+  if (next) { nb.querySelector("span").textContent = next.title; nb.onclick = () => go("guide-" + next.id); }
+}
+
 // ---- 切換畫面 ----
 function render(hash) {
   closeDetail();
@@ -1647,12 +2031,17 @@ function render(hash) {
   if (synth) synth.cancel();
   quiz.token = null;
   const isQuiz = hash === "quiz";
-  $("learn").hidden = isQuiz;
+  const isGuide = hash === "guide" || hash.startsWith("guide-");
+  const isLearn = !isQuiz && !isGuide;
+  $("learn").hidden = !isLearn;
   $("quiz").hidden = !isQuiz;
-  $("unit").hidden = isQuiz;
-  $("tab-learn").setAttribute("aria-pressed", String(!isQuiz));
+  $("guide").hidden = !isGuide;
+  $("unit").hidden = !isLearn;
+  $("tab-learn").setAttribute("aria-pressed", String(isLearn));
   $("tab-quiz").setAttribute("aria-pressed", String(isQuiz));
+  $("tab-guide").setAttribute("aria-pressed", String(isGuide));
   if (isQuiz) { renderSetup(); return; }
+  if (isGuide) { renderGuide(hash.replace(/^guide-?/, "")); return; }
   let idx = UNITS.findIndex((u) => u.id === hash);
   if (idx < 0) idx = Math.max(0, UNITS.findIndex((u) => u.id === store.get("unit")));
   renderUnit(idx);
@@ -1665,6 +2054,7 @@ function go(id) {
 $("unit").addEventListener("change", (e) => go(e.target.value));
 $("tab-learn").addEventListener("click", () => go(store.get("unit") || UNITS[0].id));
 $("tab-quiz").addEventListener("click", () => go("quiz"));
+$("tab-guide").addEventListener("click", () => go("guide"));
 window.addEventListener("hashchange", () => render(location.hash.slice(1)));
 document.addEventListener("keydown", (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
