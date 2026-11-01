@@ -262,7 +262,23 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 .nav button:disabled { visibility: hidden; }
 .title-block { display: grid; gap: 2px; min-width: 0; }
 .eyebrow { font-size: .75rem; letter-spacing: .12em; color: var(--ai); font-weight: 700; }
-.tools { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.tools { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: .88rem; color: var(--muted); user-select: none; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.switch .track {
+  position: relative; width: 38px; height: 22px; border-radius: 999px; flex-shrink: 0;
+  background: var(--line); transition: background .2s;
+}
+.switch .track::after {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--sheet); box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform .2s;
+}
+.switch input:checked + .track { background: var(--pencil); }
+.switch input:checked + .track::after { transform: translateX(16px); }
+.switch input:checked ~ span:last-child { color: var(--ink); }
+.switch input:focus-visible + .track { outline: 2px solid var(--ai); outline-offset: 2px; }
+#list[data-extra="off"] .item.extra { display: none; }
+.extra-check { border-top: 1px dashed var(--line); margin-top: 4px; padding-top: 12px; color: var(--muted); }
 .pill {
   display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: .88rem; cursor: pointer;
   color: var(--ai); background: var(--ai-soft); border: 0; border-radius: 999px; padding: 7px 14px 7px 10px;
@@ -370,6 +386,11 @@ kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radi
       </div>
       <div class="tools">
         <button type="button" class="link" id="reveal-all" hidden>全部翻開</button>
+        <label class="switch" id="extra-switch" for="show-extra">
+          <input type="checkbox" id="show-extra" role="switch">
+          <span class="track" aria-hidden="true"></span>
+          <span>顯示補充</span>
+        </label>
       </div>
     </div>
     <p class="hint" id="mode-hint" hidden></p>
@@ -506,6 +527,8 @@ const store = {
   get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
 };
+// 要不要顯示課本上的手寫補充（學習與考試共用）
+let showExtra = store.get("extra") !== "off";
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
@@ -609,7 +632,8 @@ function poolOf(u) {
     if (u.grid === "numbers") return cells.map((c) => ({ ja: c.small, zh: c.big, say: c.say }));
     return cells.map((c) => ({ ja: c.big, zh: c.small, say: c.say }));
   }
-  return u.items.map((it) => ({ ja: it.ja, sub: it.kanji, zh: it.zh, say: sayOf(it) }));
+  return u.items.filter((it) => showExtra || !it.extra)
+    .map((it) => ({ ja: it.ja, sub: it.kanji, zh: it.zh, say: sayOf(it) }));
 }
 const ASK = {
   kana: { ja2zh: "這個怎麼念？選出羅馬音", zh2ja: "選出對應的平假名" },
@@ -730,7 +754,7 @@ function tapCard(el, say) {
 function itemButton(it, maskable) {
   const b = document.createElement("button");
   b.type = "button";
-  b.className = "item" + (maskable ? " masked" : "");
+  b.className = "item" + (maskable ? " masked" : "") + (it.extra ? " extra" : "");
   b.innerHTML =
     '<span class="text">' +
       '<span class="ja ja-part' + (it.ja.includes("\n") ? " long" : "") + '">' + jaHTML(it.ja, it.extra ? '<span class="tag">補充</span>' : "") + "</span>" +
@@ -763,7 +787,7 @@ function stopAll() {
 }
 function playAll() {
   if (autoplay) { stopAll(); return; }
-  const els = Array.from(document.querySelectorAll("#list .item, #list .cell"));
+  const els = Array.from(document.querySelectorAll("#list .item, #list .cell")).filter((el) => el.offsetParent !== null);
   const token = autoplay = {};
   updatePlayAll();
   let i = 0;
@@ -778,6 +802,15 @@ function playAll() {
   step();
 }
 $("play-all").addEventListener("click", playAll);
+function setShowExtra(on) {
+  showExtra = on;
+  store.set("extra", on ? "on" : "off");
+}
+$("show-extra").addEventListener("change", (e) => {
+  setShowExtra(e.target.checked);
+  stopAll();
+  render(location.hash.slice(1));
+});
 
 function setMode(m) {
   mode = m;
@@ -838,7 +871,7 @@ function renderUnit(idx) {
     $("unit-count").textContent = n + " 個";
   } else {
     list.className = "list";
-    $("unit-count").textContent = unit.items.length + " 句";
+    $("unit-count").textContent = unit.items.filter((it) => showExtra || !it.extra).length + " 句";
     unit.items.forEach((it) => list.appendChild(itemButton(it, true)));
   }
   $("unit-eyebrow").textContent = "單元 " + (idx + 1) + " / " + UNITS.length + "・" + $("unit-count").textContent;
@@ -850,6 +883,9 @@ function renderUnit(idx) {
   $("next").onclick = () => go(UNITS[idx + 1].id);
   store.set("unit", unit.id);
   $("cho-legend").hidden = unit.grid === "kana";
+  $("extra-switch").hidden = !(unit.items || []).some((it) => it.extra);
+  $("show-extra").checked = showExtra;
+  list.dataset.extra = showExtra ? "on" : "off";
   setMode(mode);
 }
 
@@ -890,7 +926,8 @@ function renderSetup() {
     '<div class="unit-head"><h2>出考卷</h2></div>' +
     '<section class="panel"><div class="panel-head"><h3>範圍</h3>' +
       '<span class="links"><button type="button" class="link" id="q-all">全選</button><button type="button" class="link" id="q-none">清除</button></span></div>' +
-      '<div class="checks" id="q-units"></div></section>' +
+      '<div class="checks" id="q-units"></div>' +
+      '<label class="check extra-check" for="q-extra"><input type="checkbox" id="q-extra"' + (showExtra ? " checked" : "") + '><span class="check-name">包含「補充」的單字和句子</span></label></section>' +
     '<section class="panel"><h3>題型</h3><div id="q-type"></div></section>' +
     '<section class="panel"><h3>題數</h3><div id="q-count"></div></section>' +
     '<button type="button" class="primary" id="q-start">開始考試</button>';
@@ -908,6 +945,7 @@ function renderSetup() {
     });
     checks.appendChild(lab);
   });
+  $("q-extra").addEventListener("change", (e) => { setShowExtra(e.target.checked); renderSetup(); });
   $("q-all").onclick = () => { UNITS.forEach((u) => quiz.units.add(u.id)); renderSetup(); };
   $("q-none").onclick = () => { quiz.units.clear(); renderSetup(); };
   $("q-type").appendChild(seg(TYPES, quiz.type, (v) => { quiz.type = v; }));
