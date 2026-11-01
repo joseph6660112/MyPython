@@ -21,6 +21,7 @@
   --ai-soft: #e3e9f6;
   --pencil: #6f6a5f;      /* 鉛筆色：手寫補充 */
   --pencil-soft: #efece4;
+  --cho-line: #93a8db;    /* 長音底線 */
   --ok: #1d7a4c;
   --ok-soft: #e1f2e8;
   --bad: #b3261e;
@@ -31,14 +32,14 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --paper: #10141c; --sheet: #181e2a; --ink: #e5e9f1; --muted: #9aa4b7; --line: #283043;
-    --ai: #94adea; --ai-soft: #222f4d; --pencil: #c2bba9; --pencil-soft: #2a2924;
+    --ai: #94adea; --ai-soft: #222f4d; --pencil: #c2bba9; --pencil-soft: #2a2924; --cho-line: #5a72b0;
     --ok: #6fd3a0; --ok-soft: #173528; --bad: #f2948a; --bad-soft: #3d1f1c;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --paper: #10141c; --sheet: #181e2a; --ink: #e5e9f1; --muted: #9aa4b7; --line: #283043;
-  --ai: #94adea; --ai-soft: #222f4d; --pencil: #c2bba9; --pencil-soft: #2a2924;
+  --ai: #94adea; --ai-soft: #222f4d; --pencil: #c2bba9; --pencil-soft: #2a2924; --cho-line: #5a72b0;
   --ok: #6fd3a0; --ok-soft: #173528; --bad: #f2948a; --bad-soft: #3d1f1c;
   color-scheme: dark;
 }
@@ -250,6 +251,23 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 #list[data-mode="ja"] .cell.masked .zh-part { color: transparent; background: var(--line); border-radius: 6px; }
 #list[data-mode="zh"] .cell.masked .ja-part rt { color: transparent; }
 .cell .ja-part, .cell .zh-part { min-width: 2.4em; text-align: center; }
+
+/* 長音：整個長音底下一條線，負責拉長的那個假名用主色 */
+.cho {
+  text-decoration-line: underline;
+  text-decoration-color: var(--cho-line);
+  text-decoration-thickness: 2px;
+  text-underline-offset: .3em;
+  text-decoration-skip-ink: none;
+}
+.cho b { font-weight: inherit; color: var(--ai); }
+rt .cho { text-decoration: none; }
+#list[data-mode="zh"] .cell.masked .ja-part .cho,
+#list[data-mode="ja"] .cell.masked .zh-part .cho { text-decoration-color: transparent; }
+#list[data-mode="zh"] .cell.masked .ja-part .cho b,
+#list[data-mode="ja"] .cell.masked .zh-part .cho b { color: transparent; }
+.legend { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.legend .eg { font-family: var(--font-ja); font-size: 1.05rem; color: var(--ink); }
 button, label, select { touch-action: manipulation; }
 .hint { color: var(--muted); font-size: .85rem; margin: 0; }
 kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
@@ -302,6 +320,7 @@ kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radi
       <button type="button" class="link" id="reveal-all" hidden>全部翻開</button>
     </div>
     <p class="hint" id="mode-hint" hidden></p>
+    <p class="hint legend" id="cho-legend"><span class="eg">せん<span class="cho">せ<b>い</b></span></span><span>畫底線的是長音，藍字代表前一個音拉長一拍</span></p>
     <div class="list" id="list"></div>
     <div class="nav">
       <button type="button" id="prev">‹ 上一單元</button>
@@ -438,8 +457,49 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
 // {漢字|かな} → <ruby>
+// ---- 長音標示 ----
+const VOWEL = {};
+[["a", "あかさたなはまやらわがざだばぱゃぁアカサタナハマヤラワガザダバパャァ"],
+ ["i", "いきしちにひみりぎじぢびぴぃイキシチニヒミリギジヂビピィ"],
+ ["u", "うくすつぬふむゆるぐずづぶぷゅぅウクスツヌフムユルグズヅブプュゥ"],
+ ["e", "えけせてねへめれげぜでべぺぇエケセテネヘメレゲゼデベペェ"],
+ ["o", "おこそとのほもよろをごぞどぼぽょぉオコソトノホモヨロヲゴゾドボポョォ"],
+].forEach(([v, chars]) => Array.from(chars).forEach((c) => { VOWEL[c] = v; }));
+const SMALL = "ゃゅょぁぃぅぇぉャュョァィゥェォ";
+// 前一個音的母音 + 後面這個假名 → 是不是長音
+const LENGTHENS = { "あ": "a", "い": "ie", "う": "uo", "え": "e", "お": "o" };
+function isLong(prev, next) {
+  const v = VOWEL[Array.from(prev).pop()];
+  if (!v) return false;
+  if (next === "ー") return true;
+  return (LENGTHENS[next] || "").includes(v);
+}
+function markLong(text) {
+  const morae = [];
+  for (const ch of Array.from(text)) {
+    if (SMALL.includes(ch) && morae.length) morae[morae.length - 1] += ch;
+    else morae.push(ch);
+  }
+  let out = "";
+  for (let i = 0; i < morae.length; i++) {
+    if (i + 1 < morae.length && isLong(morae[i], morae[i + 1])) {
+      out += '<span class="cho">' + morae[i] + "<b>" + morae[i + 1] + "</b></span>";
+      i++;
+    } else out += morae[i];
+  }
+  return out;
+}
+
+// {漢字|かな} → <ruby>，順便標出長音
 function toRuby(s) {
-  return esc(s).replace(/\{([^|}]+)\|([^}]+)\}/g, "<ruby>$1<rt>$2</rt></ruby>");
+  let out = "", last = 0;
+  s.replace(/\{([^|}]+)\|([^}]+)\}/g, (m, base, reading, off) => {
+    out += markLong(esc(s.slice(last, off)));
+    out += "<ruby>" + esc(base) + "<rt>" + markLong(esc(reading)) + "</rt></ruby>";
+    last = off + m.length;
+    return m;
+  });
+  return out + markLong(esc(s.slice(last)));
 }
 function jaHTML(s, tail) {
   const lines = s.split("\n");
@@ -643,7 +703,7 @@ function renderUnit(idx) {
         // 五十音：大字是日文；數字：大字是數字（當作中文那一面）
         const bigPart = unit.grid === "numbers" ? "zh-part" : "ja-part";
         const smallPart = unit.grid === "numbers" ? "ja-part" : "zh-part";
-        b.innerHTML = '<span class="k ' + bigPart + '">' + esc(c.big) + '</span><span class="r ' + smallPart + '">' + esc(c.small) + "</span>";
+        b.innerHTML = '<span class="k ' + bigPart + '">' + esc(c.big) + '</span><span class="r ' + smallPart + '">' + (unit.grid === "numbers" ? markLong(esc(c.small)) : esc(c.small)) + "</span>";
         b.setAttribute("aria-label", "播放：" + c.big + "（" + c.small + "）");
         b.addEventListener("click", () => tapCard(b, c.say));
         g.appendChild(b);
@@ -661,6 +721,7 @@ function renderUnit(idx) {
   $("prev").onclick = () => go(UNITS[idx - 1].id);
   $("next").onclick = () => go(UNITS[idx + 1].id);
   store.set("unit", unit.id);
+  $("cho-legend").hidden = unit.grid === "kana";
   setMode(mode);
 }
 
