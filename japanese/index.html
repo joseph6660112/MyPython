@@ -21,6 +21,10 @@
   --ai-soft: #e3e9f6;
   --pencil: #6f6a5f;      /* 鉛筆色：手寫補充 */
   --pencil-soft: #efece4;
+  --ok: #1d7a4c;
+  --ok-soft: #e1f2e8;
+  --bad: #b3261e;
+  --bad-soft: #fbe6e3;
   --font-ja: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
   --font-zh: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
 }
@@ -28,15 +32,18 @@
   :root:not([data-theme="light"]) {
     --paper: #10141c; --sheet: #181e2a; --ink: #e5e9f1; --muted: #9aa4b7; --line: #283043;
     --ai: #94adea; --ai-soft: #222f4d; --pencil: #c2bba9; --pencil-soft: #2a2924;
+    --ok: #6fd3a0; --ok-soft: #173528; --bad: #f2948a; --bad-soft: #3d1f1c;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --paper: #10141c; --sheet: #181e2a; --ink: #e5e9f1; --muted: #9aa4b7; --line: #283043;
   --ai: #94adea; --ai-soft: #222f4d; --pencil: #c2bba9; --pencil-soft: #2a2924;
+  --ok: #6fd3a0; --ok-soft: #173528; --bad: #f2948a; --bad-soft: #3d1f1c;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   margin: 0;
   background: var(--paper);
@@ -75,6 +82,16 @@ h1 span { color: var(--ai); }
   padding: 4px 12px; border-radius: 999px; cursor: pointer;
 }
 .speed button[aria-pressed="true"] { background: var(--ai); color: var(--sheet); }
+.bar-row { display: flex; gap: 10px; align-items: center; }
+.bar-row select { flex: 1; min-width: 0; }
+.tabs, .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+:focus-visible { outline: 2px solid var(--ai); outline-offset: 2px; }
+.tabs { flex-shrink: 0; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 2px; }
+.tabs button, .seg button {
+  font: inherit; font-size: .95rem; cursor: pointer; color: var(--muted);
+  background: none; border: 0; border-radius: 8px; padding: 7px 14px;
+}
+.tabs button[aria-pressed="true"] { background: var(--sheet); color: var(--ai); font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
 select {
   width: 100%; font: inherit; font-size: 1rem; color: var(--ink); background: var(--paper);
   border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
@@ -137,6 +154,82 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 .kana h3:first-child { margin-top: 0; }
 .grid.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .grid.g3 .cell { aspect-ratio: auto; padding-block: 10px; }
+.grid.gn { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.gn .cell { aspect-ratio: auto; grid-template-columns: 2.6em 1fr; justify-items: start; gap: 8px; padding: 10px 12px; }
+.gn .cell .k { font-family: var(--font-zh); font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.gn .cell .r { font-family: var(--font-ja); font-size: .95rem; color: var(--ink); letter-spacing: 0; }
+@media (min-width: 600px) {
+  .grid.gn { grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); }
+  .gn .cell { grid-template-columns: none; justify-items: center; gap: 2px; padding-inline: 4px; }
+  .gn .cell .r { font-size: .82rem; white-space: nowrap; }
+}
+
+/* 考試 */
+.view { display: grid; gap: 14px; }
+.panel { background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 10px; }
+.panel h3, .sub-h { margin: 0; font-size: 1rem; }
+.sub-h { color: var(--muted); }
+.panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.links { display: flex; gap: 4px; }
+.link { font: inherit; font-size: .9rem; color: var(--ai); background: none; border: 0; padding: 4px 8px; cursor: pointer; }
+.checks { display: grid; gap: 2px; }
+.check { display: flex; align-items: center; gap: 10px; padding: 8px 4px; cursor: pointer; border-radius: 8px; }
+.check:hover { background: var(--paper); }
+.check input { width: 20px; height: 20px; accent-color: var(--ai); margin: 0; flex-shrink: 0; }
+.check-name { flex: 1; min-width: 0; }
+.seg button { border: 1px solid var(--line); background: var(--paper); }
+.seg button[aria-pressed="true"] { background: var(--ai); border-color: var(--ai); color: var(--sheet); }
+.primary {
+  font: inherit; font-size: 1.05rem; font-weight: 700; cursor: pointer;
+  color: var(--sheet); background: var(--ai); border: 0; border-radius: 12px; padding: 13px 20px;
+}
+.primary:disabled { opacity: .45; cursor: default; }
+.ghost {
+  font: inherit; font-size: .95rem; cursor: pointer; color: var(--muted);
+  background: none; border: 1px solid var(--line); border-radius: 12px; padding: 11px 18px;
+}
+.row { display: flex; flex-wrap: wrap; gap: 10px; }
+.row > * { flex: 1 1 160px; }
+.bar { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--ai); border-radius: 99px; }
+.prompt {
+  background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; padding: 22px 16px;
+  display: grid; justify-items: center; gap: 8px; text-align: center;
+}
+.ask { color: var(--muted); font-size: .9rem; }
+.q-ja { font-family: var(--font-ja); font-size: 2.2rem; line-height: 1.7; }
+.q-ja.long { font-size: 1.2rem; text-align: left; }
+.q-ja .line { display: block; }
+.q-ja rt { font-size: .45em; color: var(--muted); }
+.q-zh { font-size: 1.5rem; white-space: pre-line; text-wrap: balance; }
+.mini-play, .big-play {
+  display: grid; place-items: center; border: 0; cursor: pointer; border-radius: 50%;
+  background: var(--ai-soft); color: var(--ai);
+}
+.mini-play { width: 40px; height: 40px; }
+.mini-play svg { width: 18px; height: 18px; fill: currentColor; }
+.big-play { width: 88px; height: 88px; }
+.big-play svg { width: 38px; height: 38px; fill: currentColor; }
+.mini-play.playing, .big-play.playing { background: var(--ai); color: var(--sheet); }
+.opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 10px; }
+.opt {
+  font: inherit; font-size: 1.05rem; color: var(--ink); text-align: left; cursor: pointer;
+  background: var(--sheet); border: 1.5px solid var(--line); border-radius: 12px; padding: 14px 16px;
+  white-space: pre-line; min-width: 0;
+}
+.opt.ja-opt { font-family: var(--font-ja); font-size: 1.2rem; white-space: normal; line-height: 1.8; }
+.opt.ja-opt .line { display: block; }
+.opt rt { font-size: .5em; color: var(--muted); }
+.opt:not(:disabled):hover { border-color: var(--ai); }
+.opt:disabled { cursor: default; }
+.opt.right { border-color: var(--ok); background: var(--ok-soft); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.feedback { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; border-radius: 12px; padding: 12px 14px; }
+.feedback.ok { background: var(--ok-soft); color: var(--ok); }
+.feedback.bad { background: var(--bad-soft); color: var(--bad); }
+.fb-text { font-weight: 700; }
+.score { font-size: 3.2rem; font-weight: 700; color: var(--ai); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.score small { font-size: 1.4rem; color: var(--muted); font-weight: 400; }
 .nav { display: flex; justify-content: space-between; gap: 12px; }
 .nav button {
   font: inherit; font-size: .9rem; color: var(--ai); background: none; cursor: pointer;
@@ -162,14 +255,21 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
         <button type="button" id="spd-slow" data-rate="0.6" aria-pressed="false">慢速</button>
       </div>
     </div>
-    <label for="unit" hidden>選擇單元</label>
-    <select id="unit"></select>
+    <div class="bar-row">
+      <div class="tabs" role="group" aria-label="模式">
+        <button type="button" id="tab-learn" aria-pressed="true">學習</button>
+        <button type="button" id="tab-quiz" aria-pressed="false">考試</button>
+      </div>
+      <label for="unit" hidden>選擇單元</label>
+      <select id="unit"></select>
+    </div>
   </div>
 </header>
 
 <main>
   <div class="wrap">
     <p class="warn" id="warn" hidden></p>
+    <div class="view" id="learn">
     <div class="unit-head">
       <h2 id="unit-title"></h2>
       <span class="count" id="unit-count"></span>
@@ -180,6 +280,8 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
       <button type="button" id="next">下一單元 ›</button>
     </div>
     <p class="tip">點任一行就會念出日文。沒有聲音的話，請確認手機沒有開靜音。</p>
+    </div>
+    <div class="view" id="quiz" hidden></div>
   </div>
 </main>
 
@@ -204,7 +306,7 @@ const KANA = [
   ] },
 ];
 const UNITS = [
-  { id: "kana", title: "五十音（平假名・羅馬音）", grid: KANA },
+  { id: "kana", title: "五十音 平假名", grid: "kana" },
   {
     id: "greet", title: "每日的招呼語",
     items: [
@@ -225,22 +327,7 @@ const UNITS = [
       { ja: "ごちそうさま（でした）。", zh: "我吃飽了、謝謝招待。（吃飯後）", note: "加「でした」比較禮貌", say: "ごちそうさまでした。", extra: true },
     ],
   },
-  {
-    id: "numbers", title: "數字 0～10",
-    items: [
-      { ja: "ゼロ、れい", kanji: "0", zh: "零" },
-      { ja: "いち", kanji: "1・一", zh: "一" },
-      { ja: "に", kanji: "2・二", zh: "二" },
-      { ja: "さん", kanji: "3・三", zh: "三" },
-      { ja: "よん、し", kanji: "4・四", zh: "四" },
-      { ja: "ご", kanji: "5・五", zh: "五" },
-      { ja: "ろく", kanji: "6・六", zh: "六" },
-      { ja: "なな、しち", kanji: "7・七", zh: "七" },
-      { ja: "はち", kanji: "8・八", zh: "八" },
-      { ja: "きゅう、く", kanji: "9・九", zh: "九" },
-      { ja: "じゅう", kanji: "10・十", zh: "十" },
-    ],
-  },
+  { id: "numbers", title: "數字 0～100", grid: "numbers" },
   {
     id: "l1-words", title: "第1課　單語",
     items: [
@@ -319,11 +406,15 @@ const store = {
   get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
 };
-const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
 // {漢字|かな} → <ruby>
 function toRuby(s) {
   return esc(s).replace(/\{([^|}]+)\|([^}]+)\}/g, "<ruby>$1<rt>$2</rt></ruby>");
+}
+function jaHTML(s) {
+  return s.split("\n").map((l) => '<span class="line">' + toRuby(l) + "</span>").join("");
 }
 // 要念出來的文字：去掉標音、括號、～、空白
 function toSpeech(s) {
@@ -334,6 +425,56 @@ function toSpeech(s) {
     .replace(/[ 　]/g, "")
     .replace(/。。/g, "。");
 }
+const toKata = (s) => Array.from(s).map((ch) => String.fromCharCode(ch.charCodeAt(0) + 0x60)).join("");
+
+// 把五十音、數字整理成「格子」
+function kanaSections(defs) {
+  return defs.map((d) => ({
+    label: d.label, kind: d.cols === 3 ? "g3" : "g5",
+    cells: d.rows.flatMap((row) => row.split(" ").map((c) => {
+      if (c === "-") return null;
+      const m = c.match(/^([^\x00-\x7f]+)(.*)$/);
+      return { big: m[1], small: m[2], say: toKata(m[1]) }; // 用片假名念，避免は、へ、を被當成助詞
+    })),
+  }));
+}
+const ONES = ["", "いち", "に", "さん", "よん", "ご", "ろく", "なな", "はち", "きゅう"];
+const ALT = { 0: "ゼロ、れい", 4: "よん、し", 7: "なな、しち", 9: "きゅう、く" };
+function numReading(n) {
+  if (ALT[n]) return ALT[n];
+  if (n === 100) return "ひゃく";
+  const t = Math.floor(n / 10), o = n % 10;
+  return (t ? (t === 1 ? "" : ONES[t]) + "じゅう" : "") + ONES[o];
+}
+function numSections() {
+  const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+  const secs = [{ label: "0～10", nums: range(0, 10) }];
+  for (let s = 11; s <= 91; s += 10) secs.push({ label: s + "～" + (s + 9), nums: range(s, s + 9) });
+  return secs.map((x) => ({
+    label: x.label, kind: "gn",
+    cells: x.nums.map((n) => ({ big: String(n), small: numReading(n), say: numReading(n) })),
+  }));
+}
+UNITS.forEach((u) => {
+  if (u.grid === "kana") u.sections = kanaSections(KANA);
+  if (u.grid === "numbers") u.sections = numSections();
+});
+
+// 考試用的題庫：每個單元都轉成 { ja, sub, zh, say }
+function poolOf(u) {
+  if (u.sections) {
+    const cells = u.sections.flatMap((s) => s.cells).filter(Boolean);
+    if (u.grid === "numbers") return cells.map((c) => ({ ja: c.small, zh: c.big, say: c.say }));
+    return cells.map((c) => ({ ja: c.big, zh: c.small, say: c.say }));
+  }
+  return u.items.map((it) => ({ ja: it.ja, sub: it.kanji, zh: it.zh, say: it.say || toSpeech(it.ja) }));
+}
+const ASK = {
+  kana: { ja2zh: "這個怎麼念？選出羅馬音", zh2ja: "選出對應的平假名" },
+  numbers: { ja2zh: "選出對應的數字", zh2ja: "選出正確的日文念法" },
+  default: { ja2zh: "選出中文意思", zh2ja: "選出對應的日文" },
+};
+const askOf = (u, type) => type === "listen" ? "聽聽看，是哪一個？" : (ASK[u.grid] || ASK.default)[type];
 
 // ---- 語音 ----
 const synth = window.speechSynthesis;
@@ -365,15 +506,15 @@ function speak(text, el) {
   u.lang = "ja-JP";
   if (jaVoice) u.voice = jaVoice;
   u.rate = rate;
-  playingEl = el;
-  el.classList.add("playing");
-  const done = () => { el.classList.remove("playing"); if (playingEl === el) playingEl = null; };
+  playingEl = el || null;
+  if (el) el.classList.add("playing");
+  const done = () => { if (el) el.classList.remove("playing"); if (playingEl === el) playingEl = null; };
   u.onend = done;
   u.onerror = done;
   synth.speak(u);
 }
 
-// ---- 畫面 ----
+// ---- 學習畫面 ----
 const PLAY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>';
 
 UNITS.forEach((u, i) => {
@@ -383,62 +524,56 @@ UNITS.forEach((u, i) => {
   $("unit").appendChild(o);
 });
 
-function render(id) {
-  let idx = UNITS.findIndex((u) => u.id === id);
-  if (idx < 0) idx = 0;
+function itemButton(it) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "item";
+  b.innerHTML =
+    '<span class="text">' +
+      '<span class="ja' + (it.ja.includes("\n") ? " long" : "") + '">' + jaHTML(it.ja) + (it.extra ? '<span class="tag">補充</span>' : "") + "</span>" +
+      (it.kanji ? '<span class="kanji">' + esc(it.kanji) + "</span>" : "") +
+      '<span class="zh">' + esc(it.zh) + "</span>" +
+      (it.note ? '<span class="note">' + esc(it.note) + "</span>" : "") +
+    "</span>" +
+    '<span class="play">' + PLAY_ICON + "</span>";
+  b.setAttribute("aria-label", "播放：" + toSpeech(it.ja));
+  b.addEventListener("click", () => speak(it.say || toSpeech(it.ja), b));
+  return b;
+}
+
+function renderUnit(idx) {
   const unit = UNITS[idx];
-  if (synth) synth.cancel();
   $("unit").value = unit.id;
   $("unit-title").textContent = unit.title;
   const list = $("list");
   list.innerHTML = "";
-  if (unit.grid) {
+  if (unit.sections) {
     list.className = "kana";
     let n = 0;
-    unit.grid.forEach((sec) => {
+    unit.sections.forEach((sec) => {
       const h = document.createElement("h3");
       h.textContent = sec.label;
       list.appendChild(h);
       const g = document.createElement("div");
-      g.className = "grid" + (sec.cols === 3 ? " g3" : "");
-      sec.rows.forEach((row) => row.split(" ").forEach((c) => {
-        if (c === "-") { const e = document.createElement("span"); e.className = "gap"; g.appendChild(e); return; }
+      g.className = "grid " + sec.kind;
+      sec.cells.forEach((c) => {
+        if (!c) { const e = document.createElement("span"); e.className = "gap"; g.appendChild(e); return; }
         n++;
-        const m = c.match(/^([^\x00-\x7f]+)(.*)$/);
-        const kana = m[1], roma = m[2];
         const b = document.createElement("button");
         b.type = "button";
         b.className = "cell";
-        b.innerHTML = '<span class="k">' + kana + '</span><span class="r">' + roma + "</span>";
-        b.setAttribute("aria-label", "播放：" + kana + "（" + roma + "）");
-        // 用片假名念，避免は、へ、を被當成助詞
-        const kata = Array.from(kana).map((ch) => String.fromCharCode(ch.charCodeAt(0) + 0x60)).join("");
-        b.addEventListener("click", () => speak(kata, b));
+        b.innerHTML = '<span class="k">' + esc(c.big) + '</span><span class="r">' + esc(c.small) + "</span>";
+        b.setAttribute("aria-label", "播放：" + c.big + "（" + c.small + "）");
+        b.addEventListener("click", () => speak(c.say, b));
         g.appendChild(b);
-      }));
+      });
       list.appendChild(g);
     });
     $("unit-count").textContent = n + " 個";
   } else {
-  list.className = "list";
-  $("unit-count").textContent = unit.items.length + " 句";
-  unit.items.forEach((it) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "item";
-    const lines = it.ja.split("\n").map((l) => '<span class="line">' + toRuby(l) + "</span>").join("");
-    b.innerHTML =
-      '<span class="text">' +
-        '<span class="ja' + (it.ja.includes("\n") ? " long" : "") + '">' + lines + (it.extra ? '<span class="tag">補充</span>' : "") + "</span>" +
-        (it.kanji ? '<span class="kanji">' + esc(it.kanji) + "</span>" : "") +
-        '<span class="zh">' + esc(it.zh) + "</span>" +
-        (it.note ? '<span class="note">' + esc(it.note) + "</span>" : "") +
-      "</span>" +
-      '<span class="play">' + PLAY_ICON + "</span>";
-    b.setAttribute("aria-label", "播放：" + toSpeech(it.ja));
-    b.addEventListener("click", () => speak(it.say || toSpeech(it.ja), b));
-    list.appendChild(b);
-  });
+    list.className = "list";
+    $("unit-count").textContent = unit.items.length + " 句";
+    unit.items.forEach((it) => list.appendChild(itemButton(it)));
   }
   $("prev").disabled = idx === 0;
   $("next").disabled = idx === UNITS.length - 1;
@@ -447,12 +582,200 @@ function render(id) {
   store.set("unit", unit.id);
 }
 
+// ---- 考試 ----
+const TYPES = [["mix", "混合"], ["ja2zh", "看日文選答案"], ["zh2ja", "看中文選日文"], ["listen", "聽音選日文"]];
+const COUNTS = [10, 20, 30, 50];
+const quiz = {
+  units: new Set((store.get("quizUnits") || "").split(",").filter((id) => UNITS.some((u) => u.id === id))),
+  type: store.get("quizType") || "mix",
+  count: parseInt(store.get("quizCount"), 10) || 10,
+  qs: [], i: 0, right: 0, wrong: [],
+};
+if (!quiz.units.size) quiz.units.add("kana");
+
+function seg(options, current, onPick) {
+  const wrap = document.createElement("div");
+  wrap.className = "seg";
+  options.forEach(([val, label]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = label;
+    b.setAttribute("aria-pressed", String(val === current));
+    b.addEventListener("click", () => { onPick(val); renderSetup(); });
+    wrap.appendChild(b);
+  });
+  return wrap;
+}
+function saveQuiz() {
+  store.set("quizUnits", Array.from(quiz.units).join(","));
+  store.set("quizType", quiz.type);
+  store.set("quizCount", String(quiz.count));
+}
+
+function renderSetup() {
+  saveQuiz();
+  const box = $("quiz");
+  box.innerHTML =
+    '<div class="unit-head"><h2>出考卷</h2></div>' +
+    '<section class="panel"><div class="panel-head"><h3>範圍</h3>' +
+      '<span class="links"><button type="button" class="link" id="q-all">全選</button><button type="button" class="link" id="q-none">清除</button></span></div>' +
+      '<div class="checks" id="q-units"></div></section>' +
+    '<section class="panel"><h3>題型</h3><div id="q-type"></div></section>' +
+    '<section class="panel"><h3>題數</h3><div id="q-count"></div></section>' +
+    '<button type="button" class="primary" id="q-start">開始考試</button>';
+  const checks = $("q-units");
+  UNITS.forEach((u) => {
+    const id = "q-u-" + u.id;
+    const lab = document.createElement("label");
+    lab.className = "check";
+    lab.setAttribute("for", id);
+    lab.innerHTML = '<input type="checkbox" id="' + id + '"' + (quiz.units.has(u.id) ? " checked" : "") + ">" +
+      '<span class="check-name">' + esc(u.title) + '</span><span class="count">' + poolOf(u).length + "</span>";
+    lab.querySelector("input").addEventListener("change", (e) => {
+      if (e.target.checked) quiz.units.add(u.id); else quiz.units.delete(u.id);
+      renderSetup();
+    });
+    checks.appendChild(lab);
+  });
+  $("q-all").onclick = () => { UNITS.forEach((u) => quiz.units.add(u.id)); renderSetup(); };
+  $("q-none").onclick = () => { quiz.units.clear(); renderSetup(); };
+  $("q-type").appendChild(seg(TYPES, quiz.type, (v) => { quiz.type = v; }));
+  $("q-count").appendChild(seg(COUNTS.map((n) => [n, n + " 題"]), quiz.count, (v) => { quiz.count = v; }));
+  const start = $("q-start");
+  start.disabled = quiz.units.size === 0;
+  if (start.disabled) start.textContent = "請先勾選範圍";
+  start.onclick = startQuiz;
+}
+
+function makeQuestions() {
+  const chosen = UNITS.filter((u) => quiz.units.has(u.id));
+  const all = chosen.flatMap((u) => poolOf(u).map((p) => ({ ...p, unit: u })));
+  return shuffle(all).slice(0, quiz.count).map((q) => {
+    const type = quiz.type === "mix" ? ["ja2zh", "zh2ja", "listen"][Math.floor(Math.random() * 3)] : quiz.type;
+    const field = type === "ja2zh" ? "zh" : "ja";
+    const seen = new Set([q[field]]);
+    const opts = [q];
+    const sources = [shuffle(poolOf(q.unit)), shuffle(all)];
+    for (const src of sources) {
+      for (const p of src) {
+        if (opts.length >= 4) break;
+        if (seen.has(p[field])) continue;
+        seen.add(p[field]);
+        opts.push(p);
+      }
+    }
+    return { q, type, field, opts: shuffle(opts) };
+  });
+}
+
+function startQuiz() {
+  quiz.qs = makeQuestions();
+  quiz.i = 0; quiz.right = 0; quiz.wrong = [];
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const box = $("quiz");
+  const { q, type, field, opts } = quiz.qs[quiz.i];
+  const total = quiz.qs.length;
+  let prompt = "";
+  if (type === "ja2zh") {
+    prompt = '<div class="q-ja' + (q.ja.includes("\n") ? " long" : "") + '">' + jaHTML(q.ja) + "</div>" +
+      (q.sub ? '<div class="kanji">' + esc(q.sub) + "</div>" : "") +
+      '<button type="button" class="mini-play" id="q-say" aria-label="聽發音">' + PLAY_ICON + "</button>";
+  } else if (type === "zh2ja") {
+    prompt = '<div class="q-zh">' + esc(q.zh) + "</div>";
+  } else {
+    prompt = '<button type="button" class="big-play" id="q-say" aria-label="再聽一次">' + PLAY_ICON + "</button>" +
+      '<div class="count">點喇叭可以再聽一次</div>';
+  }
+  box.innerHTML =
+    '<div class="unit-head"><h2>第 ' + (quiz.i + 1) + " / " + total + ' 題</h2><span class="count">答對 ' + quiz.right + "</span></div>" +
+    '<div class="bar"><span style="width:' + (quiz.i / total * 100) + '%"></span></div>' +
+    '<section class="prompt"><div class="ask">' + esc(askOf(q.unit, type)) + "</div>" + prompt + "</section>" +
+    '<div class="opts" id="q-opts"></div>' +
+    '<div class="feedback" id="q-fb" hidden></div>' +
+    '<button type="button" class="ghost" id="q-quit">結束考試</button>';
+  if ($("q-say")) $("q-say").onclick = (e) => speak(q.say, e.currentTarget);
+  const wrap = $("q-opts");
+  opts.forEach((o) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "opt" + (field === "ja" ? " ja-opt" : "");
+    b.innerHTML = field === "ja" ? jaHTML(o.ja) : esc(o.zh);
+    b.addEventListener("click", () => answer(o, b));
+    wrap.appendChild(b);
+    o._btn = b;
+  });
+  $("q-quit").onclick = showResult;
+  if (type === "listen") speak(q.say, $("q-say"));
+}
+
+function answer(o, btn) {
+  const { q, opts } = quiz.qs[quiz.i];
+  opts.forEach((x) => { x._btn.disabled = true; });
+  const ok = o === q;
+  if (ok) quiz.right++; else quiz.wrong.push(q);
+  q._btn.classList.add("right");
+  if (!ok) btn.classList.add("wrong");
+  speak(q.say, null);
+  const last = quiz.i === quiz.qs.length - 1;
+  const fb = $("q-fb");
+  fb.className = "feedback " + (ok ? "ok" : "bad");
+  fb.innerHTML = '<span class="fb-text">' + (ok ? "答對了！" : "答錯了，正確答案已標成綠色") + "</span>" +
+    '<button type="button" class="primary" id="q-next">' + (last ? "看成績" : "下一題") + "</button>";
+  fb.hidden = false;
+  $("q-next").onclick = () => {
+    if (last) return showResult();
+    quiz.i++;
+    renderQuestion();
+    window.scrollTo(0, 0);
+  };
+  $("q-next").focus({ preventScroll: true });
+}
+
+function showResult() {
+  if (synth) synth.cancel();
+  const done = quiz.wrong.length + quiz.right;
+  const total = quiz.qs.length;
+  const pct = done ? Math.round(quiz.right / done * 100) : 0;
+  const box = $("quiz");
+  box.innerHTML =
+    '<div class="unit-head"><h2>成績</h2></div>' +
+    '<section class="prompt"><div class="score">' + quiz.right + '<small> / ' + done + "</small></div>" +
+    '<div class="count">' + (done < total ? "（共 " + total + " 題，做了 " + done + " 題）" : "答對率 " + pct + "%") + "</div></section>" +
+    (quiz.wrong.length ? '<h3 class="sub-h">答錯的題目（點一下聽發音）</h3><div class="list" id="q-wrong"></div>' : "") +
+    '<div class="row"><button type="button" class="primary" id="q-again">再考一次</button>' +
+    '<button type="button" class="ghost" id="q-setup">重新選範圍</button></div>';
+  if (quiz.wrong.length) {
+    quiz.wrong.forEach((w) => $("q-wrong").appendChild(itemButton({ ja: w.ja, kanji: w.sub, zh: w.zh, say: w.say })));
+  }
+  $("q-again").onclick = () => { startQuiz(); window.scrollTo(0, 0); };
+  $("q-setup").onclick = () => { renderSetup(); window.scrollTo(0, 0); };
+}
+
+// ---- 切換畫面 ----
+function render(hash) {
+  if (synth) synth.cancel();
+  const isQuiz = hash === "quiz";
+  $("learn").hidden = isQuiz;
+  $("quiz").hidden = !isQuiz;
+  $("unit").hidden = isQuiz;
+  $("tab-learn").setAttribute("aria-pressed", String(!isQuiz));
+  $("tab-quiz").setAttribute("aria-pressed", String(isQuiz));
+  if (isQuiz) { renderSetup(); return; }
+  let idx = UNITS.findIndex((u) => u.id === hash);
+  if (idx < 0) idx = Math.max(0, UNITS.findIndex((u) => u.id === store.get("unit")));
+  renderUnit(idx);
+}
 function go(id) {
   if (location.hash.slice(1) === id) render(id);
   else location.hash = id;
   window.scrollTo(0, 0);
 }
 $("unit").addEventListener("change", (e) => go(e.target.value));
+$("tab-learn").addEventListener("click", () => go(store.get("unit") || UNITS[0].id));
+$("tab-quiz").addEventListener("click", () => go("quiz"));
 window.addEventListener("hashchange", () => render(location.hash.slice(1)));
 
 // 語速
@@ -468,7 +791,7 @@ document.querySelectorAll(".speed button").forEach((b) => {
 });
 setRate(rate);
 
-render(location.hash.slice(1) || store.get("unit") || UNITS[0].id);
+render(location.hash.slice(1));
 </script>
 <!--BODY-END-->
 </body>
