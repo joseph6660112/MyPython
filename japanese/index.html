@@ -26,6 +26,9 @@
   --ok-soft: #e1f2e8;
   --bad: #b3261e;
   --bad-soft: #fbe6e3;
+  --lv0: #c2410c; --lv0-soft: #fdeadf;   /* 不熟 */
+  --lv1: #9a6a00; --lv1-soft: #fbf0d3;   /* 普通 */
+  --lv2: #1d7a4c; --lv2-soft: #e1f2e8;   /* 熟練 */
   --font-ja: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
   --font-zh: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
 }
@@ -34,6 +37,7 @@
     --paper: #10141c; --sheet: #181e2a; --ink: #e5e9f1; --muted: #9aa4b7; --line: #283043;
     --ai: #94adea; --ai-soft: #222f4d; --pencil: #c2bba9; --pencil-soft: #2a2924; --cho-line: #5a72b0;
     --ok: #6fd3a0; --ok-soft: #173528; --bad: #f2948a; --bad-soft: #3d1f1c;
+    --lv0: #fb9a6c; --lv0-soft: #3a2216; --lv1: #e8c35a; --lv1-soft: #352c14; --lv2: #6fd3a0; --lv2-soft: #173528;
     color-scheme: dark;
   }
 }
@@ -41,6 +45,7 @@
   --paper: #10141c; --sheet: #181e2a; --ink: #e5e9f1; --muted: #9aa4b7; --line: #283043;
   --ai: #94adea; --ai-soft: #222f4d; --pencil: #c2bba9; --pencil-soft: #2a2924; --cho-line: #5a72b0;
   --ok: #6fd3a0; --ok-soft: #173528; --bad: #f2948a; --bad-soft: #3d1f1c;
+    --lv0: #fb9a6c; --lv0-soft: #3a2216; --lv1: #e8c35a; --lv1-soft: #352c14; --lv2: #6fd3a0; --lv2-soft: #173528;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -124,16 +129,31 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 .count { color: var(--muted); font-size: .85rem; white-space: nowrap; }
 .list { background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
 .item {
-  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px;
-  width: 100%; text-align: left; font: inherit; color: inherit;
-  background: none; border: 0; border-top: 1px solid var(--line);
-  padding: 14px 16px; cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px;
+  border-top: 1px solid var(--line); padding-right: 12px;
 }
 .item:first-child { border-top: 0; }
-.item:hover { background: var(--paper); }
-.item:focus-visible { outline: 2px solid var(--ai); outline-offset: -2px; }
 .item.playing { background: var(--ai-soft); }
+.item.faded { opacity: .45; }
+.item-main {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px;
+  min-width: 0; width: 100%; text-align: left; font: inherit; color: inherit;
+  background: none; border: 0; padding: 14px 2px 14px 16px; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.item-main:focus-visible { outline: 2px solid var(--ai); outline-offset: -2px; border-radius: 8px; }
+.chev { display: grid; color: var(--muted); opacity: .55; }
+.chev svg { width: 18px; height: 18px; }
+.lv {
+  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer;
+  font: inherit; font-size: .74rem; font-weight: 700; letter-spacing: .04em;
+  border: 0; border-radius: 999px; padding: 5px 9px;
+}
+.lv::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.lv.lv0 { color: var(--lv0); background: var(--lv0-soft); }
+.lv.lv1 { color: var(--lv1); background: var(--lv1-soft); }
+.lv.lv2 { color: var(--lv2); background: var(--lv2-soft); }
+.empty { margin: 0; padding: 28px 18px; text-align: center; color: var(--muted); font-size: .92rem; }
 .text { min-width: 0; display: grid; gap: 2px; }
 .ja { font-family: var(--font-ja); font-size: 1.3rem; line-height: 1.9; line-break: strict; }
 .ja.long { font-size: 1.1rem; }
@@ -150,6 +170,7 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 .play {
   width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
   background: var(--ai-soft); color: var(--ai); flex-shrink: 0;
+  border: 0; padding: 0; cursor: pointer;
 }
 .play svg { width: 18px; height: 18px; fill: currentColor; }
 .item.playing .play { background: var(--ai); color: var(--sheet); }
@@ -162,7 +183,6 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
   background: var(--sheet); border: 1px solid var(--line); border-radius: 12px;
   -webkit-tap-highlight-color: transparent;
 }
-.cell:hover { border-color: var(--ai); }
 .cell:focus-visible { outline: 2px solid var(--ai); outline-offset: 2px; }
 .cell.playing { background: var(--ai); color: var(--sheet); border-color: var(--ai); }
 .cell .k { font-family: var(--font-ja); font-size: clamp(1.6rem, 7vw, 2.4rem); line-height: 1.1; }
@@ -194,7 +214,6 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 .link { font: inherit; font-size: .9rem; color: var(--ai); background: none; border: 0; padding: 4px 8px; cursor: pointer; }
 .checks { display: grid; gap: 2px; }
 .check { display: flex; align-items: center; gap: 10px; padding: 8px 4px; cursor: pointer; border-radius: 8px; }
-.check:hover { background: var(--paper); }
 .check input { width: 20px; height: 20px; accent-color: var(--ai); margin: 0; flex-shrink: 0; }
 .check-name { flex: 1; min-width: 0; }
 .seg button { border: 1px solid var(--line); background: var(--paper); }
@@ -240,7 +259,6 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 .opt.ja-opt { font-family: var(--font-ja); font-size: 1.2rem; white-space: normal; line-height: 1.8; }
 .opt.ja-opt .line { display: block; }
 .opt rt { font-size: .5em; color: var(--muted); }
-.opt:not(:disabled):hover { border-color: var(--ai); }
 .opt:disabled { cursor: default; }
 .opt.right { border-color: var(--ok); background: var(--ok-soft); }
 .opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
@@ -258,7 +276,6 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 .nav button small { color: var(--ai); font-size: .8rem; }
 .nav button span { font-family: var(--font-ja); font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nav #next { text-align: right; grid-column: 2; }
-.nav button:hover { border-color: var(--ai); }
 .nav button:disabled { visibility: hidden; }
 .title-block { display: grid; gap: 2px; min-width: 0; }
 .eyebrow { font-size: .75rem; letter-spacing: .12em; color: var(--ai); font-weight: 700; }
@@ -287,6 +304,82 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 .pill[aria-pressed="true"] { background: var(--ai); color: var(--sheet); }
 .tip { color: var(--muted); font-size: .8rem; text-align: center; margin: 0; }
 .warn { background: var(--pencil-soft); color: var(--pencil); border-radius: 10px; padding: 10px 14px; font-size: .9rem; }
+@media (hover: hover) {
+  .item:hover { background: var(--paper); }
+  .cell:hover { border-color: var(--ai); }
+  .check:hover { background: var(--paper); }
+  .opt:not(:disabled):hover { border-color: var(--ai); }
+  .nav button:hover { border-color: var(--ai); }
+}
+.item.playing:hover { background: var(--ai-soft); }
+
+/* 熟練度篩選 */
+.lvbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lvbar-label { font-size: .85rem; color: var(--muted); }
+.lv-filter { display: flex; flex-wrap: wrap; gap: 6px; }
+.lvchip {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  font: inherit; font-size: .86rem; color: var(--muted);
+  background: var(--sheet); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px;
+}
+.lvchip i { width: 8px; height: 8px; border-radius: 50%; background: var(--lvc); opacity: .5; }
+.lvchip b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.lvchip[aria-pressed="true"] { color: var(--lvc); background: var(--lvc-soft); border-color: var(--lvc); }
+.lvchip[aria-pressed="true"] i { opacity: 1; }
+.lv0 { --lvc: var(--lv0); --lvc-soft: var(--lv0-soft); }
+.lv1 { --lvc: var(--lv1); --lvc-soft: var(--lv1-soft); }
+.lv2 { --lvc: var(--lv2); --lvc-soft: var(--lv2-soft); }
+
+/* 詳細頁 */
+html.sheet-open, html.sheet-open body { overflow: hidden; }
+.sheet {
+  position: fixed; inset: 0; z-index: 20; background: var(--paper);
+  overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+}
+.sheet-bar {
+  position: sticky; top: 0; z-index: 1; background: var(--sheet);
+  border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px);
+}
+.sheet-bar-in { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; }
+.d-nav { display: flex; gap: 8px; }
+.d-nav .icon-btn:disabled { opacity: .35; cursor: default; }
+.sheet-body { padding-block: 18px calc(40px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 14px; }
+.d-hero {
+  background: var(--sheet); border: 1px solid var(--line); border-radius: 16px;
+  padding: 22px 18px; display: grid; gap: 6px; justify-items: start;
+}
+.d-ja { margin: 0; font-family: var(--font-ja); font-size: 2.1rem; font-weight: 400; line-height: 1.7; line-break: strict; }
+.d-ja.long { font-size: 1.3rem; }
+.d-ja .line { display: block; }
+.d-ja rt { font-size: .45em; color: var(--muted); }
+.d-kanji { font-family: var(--font-ja); color: var(--muted); font-size: 1.05rem; }
+.d-zh { font-size: 1.1rem; white-space: pre-line; }
+.d-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.d-play { display: inline-flex; align-items: center; gap: 8px; }
+.d-play svg { width: 18px; height: 18px; fill: currentColor; }
+.d-play.playing { outline: 3px solid var(--ai-soft); }
+.d-info { margin: 0; white-space: pre-line; line-height: 1.85; }
+.lvseg button { display: inline-flex; align-items: center; gap: 6px; }
+.lvseg button i { width: 8px; height: 8px; border-radius: 50%; background: var(--lvc); }
+.lvseg button[aria-pressed="true"] { background: var(--lvc); border-color: var(--lvc); color: var(--sheet); }
+.lvseg button[aria-pressed="true"] i { background: var(--sheet); }
+.ex-list { display: grid; gap: 8px; }
+.ex {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
+  background: var(--paper); border: 0; border-radius: 12px; padding: 12px 14px;
+}
+.ex .ja { font-size: 1.12rem; line-height: 1.85; }
+.ex .ja.long { font-size: 1.05rem; }
+.ex.playing { background: var(--ai-soft); }
+.ex .play { width: 34px; height: 34px; }
+.ex.playing .play { background: var(--ai); color: var(--sheet); }
+.toast {
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  z-index: 30; max-width: calc(100% - 32px); background: var(--ink); color: var(--sheet);
+  padding: 10px 18px; border-radius: 999px; font-size: .9rem; box-shadow: 0 6px 20px rgba(0,0,0,.2);
+}
+
 /* 顯示模式：中日／只看中文／只看日文 */
 .modebar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .seg.small button { font-size: .88rem; padding: 6px 12px; }
@@ -320,8 +413,11 @@ button, label, select { touch-action: manipulation; }
 .hint { color: var(--muted); font-size: .85rem; margin: 0; }
 kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
 @media (prefers-reduced-motion: no-preference) {
-  .item, .cell, .opt { transition: background .15s, border-color .15s, transform .1s; }
-  .item:active, .cell:active, .opt:not(:disabled):active { transform: scale(.985); }
+  .item, .cell, .opt, .ex { transition: background .15s, border-color .15s, transform .1s, opacity .2s; }
+  .cell:active, .opt:not(:disabled):active, .ex:active { transform: scale(.985); }
+  .play:active, .lv:active, .lvchip:active { transform: scale(.92); }
+  .sheet:not([hidden]) { animation: sheet-in .22s ease-out; }
+  @keyframes sheet-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
   .playing .play svg, .playing.big-play svg, .playing.mini-play svg { animation: pulse .7s ease-in-out infinite alternate; }
   @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.18); } }
   .ja-part, .zh-part { transition: color .2s, background .2s; }
@@ -393,6 +489,7 @@ kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radi
         </label>
       </div>
     </div>
+    <div class="lvbar" id="lvbar" hidden><span class="lvbar-label">熟練度</span></div>
     <p class="hint" id="mode-hint" hidden></p>
     <p class="hint legend" id="cho-legend"><span class="eg">せん<span class="cho">せ<b>い</b></span></span><span>畫底線的是長音，藍字代表前一個音拉長一拍</span></p>
     <div class="list" id="list"></div>
@@ -400,11 +497,32 @@ kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radi
       <button type="button" id="prev"><small>‹ 上一單元</small><span id="prev-name"></span></button>
       <button type="button" id="next"><small>下一單元 ›</small><span id="next-name"></span></button>
     </div>
-    <p class="tip">點任一行就會念出日文。沒有聲音的話，請確認手機沒有開靜音。</p>
+    <p class="tip" id="learn-tip">點任一行就會念出日文。沒有聲音的話，請確認手機沒有開靜音。</p>
     </div>
     <div class="view" id="quiz" hidden></div>
   </div>
 </main>
+
+<div class="sheet" id="detail" role="dialog" aria-modal="true" aria-labelledby="d-title" hidden>
+  <div class="sheet-bar">
+    <div class="wrap sheet-bar-in">
+      <button type="button" class="icon-btn" id="d-close" aria-label="關閉詳細">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </button>
+      <span class="count" id="d-pos"></span>
+      <div class="d-nav">
+        <button type="button" class="icon-btn" id="d-prev" aria-label="上一個">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button type="button" class="icon-btn" id="d-next" aria-label="下一個">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="wrap sheet-body" id="d-body"></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script>
 // 寫法說明：{漢字|かな} 會變成上方小字標音；「補充」= 課本上的手寫筆記
@@ -522,6 +640,195 @@ const UNITS = [
   },
 ];
 
+// 每個單字／句子的詳細內容：pos 詞性或分類、info 說明、ex 例句（say 可指定語音念法）
+const DETAILS = {
+  "greet": {
+    "おはよう ございます。": { pos: "招呼語",
+      info: "早上見面時說，大約用到上午 10 點左右。\n對家人、朋友可以只說「おはよう」。\n在打工的地方或公司，就算是晚上第一次見面，也常說「おはようございます」。",
+      ex: [{ ja: "{先生|せんせい}、おはよう ございます。", zh: "老師早安。" }, { ja: "おはよう！", zh: "早！（對朋友、家人）" }] },
+    "こんにちは。": { pos: "招呼語",
+      info: "白天（大約中午到傍晚）見面時說。\n最後的「は」是助詞，念 wa 不念 ha。\n家人之間通常不說。",
+      ex: [{ ja: "ミラーさん、こんにちは。", zh: "米勒先生，午安。" }] },
+    "こんばんは。": { pos: "招呼語",
+      info: "晚上（天黑以後）見面時說。最後的「は」一樣念 wa。\n注意：晚上道別、睡前說的是「おやすみなさい」。",
+      ex: [{ ja: "{先生|せんせい}、こんばんは。", zh: "老師晚上好。" }] },
+    "お{休|やす}みなさい。": { pos: "招呼語",
+      info: "睡前，或晚上道別時說。\n對朋友、家人可以說「おやすみ」。",
+      ex: [{ ja: "おやすみなさい。また あした。", zh: "晚安，明天見。" }, { ja: "おやすみ！", zh: "晚安！（對朋友、家人）" }] },
+    "さようなら。": { pos: "招呼語",
+      info: "比較正式的「再見」，有「接下來一陣子不會見面」的感覺。\n學生放學時對老師常說「先生、さようなら」。\n朋友之間比較常用「じゃあね」「バイバイ」。",
+      ex: [{ ja: "{先生|せんせい}、さようなら。", zh: "老師再見。" }] },
+    "じゃあね。": { pos: "招呼語（口語）",
+      info: "朋友、家人之間道別時說，很口語。\n也可以說「じゃあ、また」（那下次見）。\n對老師、長輩不要用。",
+      ex: [{ ja: "じゃあね、また あした。", zh: "那掰啦，明天見。" }] },
+    "バイバイ。": { pos: "招呼語（口語）",
+      info: "從英文 bye-bye 來的，朋友之間或對小孩說。",
+      ex: [{ ja: "バイバイ、また ね。", zh: "掰掰，下次見。" }] },
+    "ありがとう ございます。": { pos: "招呼語",
+      info: "禮貌的「謝謝」。對朋友說「ありがとう」就可以。\n想更有禮貌，可以在前面加「どうも」。",
+      ex: [{ ja: "どうも ありがとう ございます。", zh: "非常謝謝您。" }, { ja: "ありがとう！", zh: "謝謝！（對朋友）" }] },
+    "すみません。": { pos: "招呼語",
+      info: "用途很多：\n① 道歉：對不起\n② 叫住別人：不好意思、請問\n③ 別人幫忙時表示感謝：麻煩您了",
+      ex: [{ ja: "すみません、もう いちど おねがいします。", zh: "不好意思，請再說一次。" }, { ja: "あ、すみません。", zh: "啊，對不起。" }] },
+    "ごめんなさい。": { pos: "招呼語",
+      info: "道歉用，比「すみません」更口語、更帶感情，常用在朋友、家人之間。\n對老師或正式場合，比較常用「すみません」。",
+      ex: [{ ja: "{遅|おそ}く なって、ごめんなさい。", zh: "我遲到了，對不起。" }] },
+    "お{願|ねが}いします。": { pos: "招呼語",
+      info: "拜託別人、請別人幫忙時說。\n點餐、交作業給老師、請店員幫忙都可以用。",
+      ex: [{ ja: "コーヒー、おねがいします。", zh: "請給我咖啡。" }, { ja: "どうぞ よろしく おねがいします。", zh: "請多多指教。" }] },
+    "ただいま。": { pos: "招呼語",
+      info: "回到家時說「我回來了」。\n家裡的人會回答「おかえりなさい」。",
+      ex: [{ ja: "ただいま。\n……おかえりなさい。", zh: "我回來了。\n……歡迎回來。" }] },
+    "おかえりなさい。": { pos: "招呼語",
+      info: "對回到家（或回到公司）的人說。\n家人、朋友之間常說「おかえり」。",
+      ex: [{ ja: "ただいま。\n……おかえり！", zh: "我回來了。\n……回來啦！（對家人、朋友）" }] },
+    "いただきます。": { pos: "招呼語",
+      info: "吃飯前雙手合十說，感謝食物和準備餐點的人。\n吃完飯說「ごちそうさまでした」。",
+      ex: [{ ja: "いただきます！", zh: "我要開動了！" }] },
+    "ごちそうさま（でした）。": { pos: "招呼語",
+      info: "吃完飯時說。\n在餐廳結帳離開時，也可以對店員說，表示「謝謝招待」。",
+      ex: [{ ja: "ごちそうさまでした。おいしかったです。", zh: "謝謝招待，很好吃。" }] },
+  },
+
+  "l1-words": {
+    "わたし": { pos: "名詞（代名詞）",
+      info: "最常用的「我」，男生女生都可以用。\n非常正式的場合會說「わたくし」。",
+      ex: [{ ja: "わたしは {学生|がくせい}です。", zh: "我是學生。" }, { ja: "わたしは たいわん{人|じん}です。", zh: "我是台灣人。" }] },
+    "わたしたち": { pos: "名詞（代名詞）",
+      info: "「我們」。「たち」接在表示人的詞後面，表示複數。",
+      ex: [{ ja: "わたしたちは {学生|がくせい}です。", zh: "我們是學生。" }] },
+    "ぼく": { pos: "名詞（代名詞）",
+      info: "男生用的「我」，語氣比較輕鬆。\n正式場合男生也用「わたし」。女生一般不用。",
+      ex: [{ ja: "ぼくは マイクです。", zh: "我是麥克。" }] },
+    "あなた": { pos: "名詞（代名詞）",
+      info: "「你、您」。\n日文通常直接叫對方「名字＋さん」，很少用「あなた」。\n對老師、長輩不要用，會不禮貌。",
+      ex: [{ ja: "あなたは {学生|がくせい}ですか。", zh: "你是學生嗎？" }] },
+    "あのひと（あのかた）": { pos: "名詞",
+      info: "「あの」是「那個」，指離說話的人和聽的人都比較遠的人。\n「あのかた」比「あのひと」禮貌。",
+      ex: [{ ja: "あの {人|ひと}は ミラーさんです。", zh: "那個人是米勒先生。" }, { ja: "あの {方|かた}は どなたですか。", zh: "那位是哪位？" }] },
+    "～さん": { pos: "接尾詞",
+      info: "接在別人的姓或名字後面，表示禮貌，男女都能用。\n不能加在自己的名字後面。",
+      ex: [{ ja: "ミラーさんは {会社員|かいしゃいん}です。", zh: "米勒先生是公司職員。" }] },
+    "～ちゃん": { pos: "接尾詞",
+      info: "接在小孩或很親近的人名字後面，表示親暱、可愛。\n對長輩不能用。",
+      ex: [{ ja: "テレーザちゃんは 9{歳|さい}です。", zh: "泰瑞莎小妹妹 9 歲。", say: "テレーザちゃんは、きゅうさいです。" }] },
+    "～じん": { pos: "接尾詞",
+      info: "國名＋じん＝某國人。\n例：にほんじん（日本人）、たいわんじん（台灣人）、アメリカじん（美國人）。",
+      ex: [{ ja: "わたしは たいわん{人|じん}です。", zh: "我是台灣人。" }, { ja: "ミラーさんは アメリカ{人|じん}です。", zh: "米勒先生是美國人。" }] },
+    "せんせい": { pos: "名詞",
+      info: "稱呼別人「老師」，也用來稱呼醫生、律師等。\n介紹自己的職業時不能說「せんせい」，要說「きょうし」。",
+      ex: [{ ja: "ワットさんは さくら{大学|だいがく}の {先生|せんせい}です。", zh: "瓦特先生是櫻花大學的老師。" }] },
+    "きょうし": { pos: "名詞",
+      info: "職業名稱「教師」，介紹自己或說明職業時用。",
+      ex: [{ ja: "わたしは {教師|きょうし}です。", zh: "我是老師。" }] },
+    "がくせい": { pos: "名詞",
+      info: "學生。大學生可以說「だいがくせい」。",
+      ex: [{ ja: "カリナさんは {学生|がくせい}です。", zh: "卡莉娜小姐是學生。" }, { ja: "わたしは {大学生|だいがくせい}です。", zh: "我是大學生。" }] },
+    "かいしゃいん": { pos: "名詞",
+      info: "一般說的「公司職員、上班族」，不提是哪間公司時用。",
+      ex: [{ ja: "ミラーさんは {会社員|かいしゃいん}です。", zh: "米勒先生是公司職員。" }] },
+    "しゃいん": { pos: "名詞",
+      info: "要和公司名稱一起用：「公司名＋の しゃいん」。",
+      ex: [{ ja: "ミラーさんは IMCの {社員|しゃいん}です。", zh: "米勒先生是 IMC 的職員。", say: "ミラーさんは、アイエムシーの社員です。" }] },
+    "しゃちょう": { pos: "名詞",
+      info: "公司的總經理、老闆。稱呼時也可以直接叫「しゃちょう」。",
+      ex: [{ ja: "あの {方|かた}は {社長|しゃちょう}です。", zh: "那位是總經理。" }] },
+    "ぎんこういん": { pos: "名詞",
+      info: "在銀行工作的人。ぎんこう（銀行）＋いん（員）。",
+      ex: [{ ja: "サントスさんは {銀行員|ぎんこういん}ですか。", zh: "山多斯先生是銀行行員嗎？" }] },
+    "いしゃ": { pos: "名詞",
+      info: "職業名稱「醫生」。\n直接稱呼醫生時要說「せんせい」。",
+      ex: [{ ja: "ワンさんは {医者|いしゃ}です。", zh: "王先生是醫生。" }] },
+    "かんごし": { pos: "名詞",
+      info: "護理師，男女都用這個詞。",
+      ex: [{ ja: "わたしは {看護師|かんごし}です。", zh: "我是護理師。" }] },
+    "けんきゅうしゃ": { pos: "名詞",
+      info: "做研究工作的人。",
+      ex: [{ ja: "カリナさんは {研究者|けんきゅうしゃ}じゃ ありません。{学生|がくせい}です。", zh: "卡莉娜小姐不是研究人員，是學生。" }] },
+    "だいがく": { pos: "名詞",
+      info: "大學。學校名稱＋だいがく，例如：さくらだいがく。",
+      ex: [{ ja: "わたしは さくら{大学|だいがく}の {学生|がくせい}です。", zh: "我是櫻花大學的學生。" }] },
+    "びょういん": { pos: "名詞",
+      info: "醫院。\n不要和「びよういん（美容院）」搞混：病院的「びょう」是拗音，而且要拉長。",
+      ex: [{ ja: "ワンさんは こうべ{病院|びょういん}の {医者|いしゃ}です。", zh: "王先生是神戶醫院的醫生。" }] },
+    "だれ（どなた）": { pos: "疑問詞",
+      info: "問「誰」。\n「どなた」比「だれ」禮貌，問初次見面的人或長輩時用。",
+      ex: [{ ja: "あの {人|ひと}は だれですか。", zh: "那個人是誰？" }, { ja: "あの {方|かた}は どなたですか。", zh: "那位是哪位？" }] },
+    "～さい": { pos: "接尾詞",
+      info: "數字＋さい＝～歲。\n要注意的念法：1 歲 いっさい、8 歲 はっさい、10 歲 じゅっさい、20 歲 はたち。",
+      ex: [{ ja: "わたしは 18{歳|さい}です。", zh: "我 18 歲。", say: "わたしは、じゅうはっさいです。" }] },
+    "なんさい（おいくつ）": { pos: "疑問詞",
+      info: "問年齡。\n對小孩、朋友用「なんさい」；對長輩、初次見面的人用「おいくつ」比較禮貌。",
+      ex: [{ ja: "テレーザちゃんは {何歳|なんさい}ですか。", zh: "泰瑞莎小妹妹幾歲？" }, { ja: "しつれいですが、おいくつですか。", zh: "不好意思，請問您幾歲？" }] },
+    "はい": { pos: "感嘆詞",
+      info: "肯定的回答「是、對」。\n點名時也用「はい」回答「有」。",
+      ex: [{ ja: "{学生|がくせい}ですか。\n……はい、{学生|がくせい}です。", zh: "是學生嗎？\n……是，是學生。" }] },
+    "いいえ": { pos: "感嘆詞",
+      info: "否定的回答「不、不是」。後面常接「～じゃ ありません」。",
+      ex: [{ ja: "{先生|せんせい}ですか。\n……いいえ、{先生|せんせい}じゃ ありません。", zh: "是老師嗎？\n……不，不是老師。" }] },
+  },
+
+  "l1-patterns": {
+    "わたしは マイク・ミラーです。": { pos: "文型 1",
+      info: "N1 は N2 です ＝ N1 是 N2。\n・「は」是主題助詞，表示「說到 N1……」，當助詞時念 wa。\n・「です」放在句尾，是禮貌的「是」。",
+      ex: [{ ja: "わたしは {学生|がくせい}です。", zh: "我是學生。" }, { ja: "ワンさんは {医者|いしゃ}です。", zh: "王先生是醫生。" }] },
+    "サントスさんは {学生|がくせい}じゃ（では） ありません。": { pos: "文型 2",
+      info: "N1 は N2 じゃ ありません ＝ N1 不是 N2。\n・「じゃ ありません」是口語。\n・「では ありません」比較正式，寫文章常用。",
+      ex: [{ ja: "わたしは {先生|せんせい}じゃ ありません。", zh: "我不是老師。" }, { ja: "ミラーさんは {学生|がくせい}では ありません。", zh: "米勒先生不是學生。" }] },
+    "ミラーさんは {会社員|かいしゃいん}ですか。": { pos: "文型 3",
+      info: "句子最後加「か」就變成疑問句，念的時候語調往上揚。\n回答用「はい」或「いいえ」。",
+      ex: [{ ja: "あなたは {学生|がくせい}ですか。\n……はい、{学生|がくせい}です。", zh: "你是學生嗎？\n……是，我是學生。" }] },
+    "サントスさんも {会社員|かいしゃいん}です。": { pos: "文型 4",
+      info: "「も」＝也。用來代替「は」，表示和前面說的一樣。",
+      ex: [{ ja: "ミラーさんは {会社員|かいしゃいん}です。\nサントスさんも {会社員|かいしゃいん}です。", zh: "米勒先生是公司職員。\n山多斯先生也是公司職員。" }, { ja: "わたしも {学生|がくせい}です。", zh: "我也是學生。" }] },
+  },
+
+  "l1-examples": {
+    "［あなたは］ マイク・ミラーさんですか。\n……はい、［わたしは］ マイク・ミラーです。": { pos: "例文 1",
+      info: "「［ ］」裡的字可以省略。\n對話中大家都知道在說誰的時候，日文常省略「あなたは」「わたしは」。",
+      ex: [{ ja: "［あなたは］ {学生|がくせい}ですか。\n……はい、［わたしは］ {学生|がくせい}です。", zh: "你是學生嗎？\n……是，我是學生。" }] },
+    "ミラーさんは {学生|がくせい}ですか。\n……いいえ、［わたしは］ {学生|がくせい}じゃ ありません。": { pos: "例文 2",
+      info: "否定的回答：「いいえ」＋「～じゃ ありません」。",
+      ex: [{ ja: "ワンさんは {先生|せんせい}ですか。\n……いいえ、{先生|せんせい}じゃ ありません。", zh: "王先生是老師嗎？\n……不，不是老師。" }] },
+    "ワンさんは {銀行員|ぎんこういん}ですか。\n……いいえ、［ワンさんは］ {銀行員|ぎんこういん}じゃ ありません。\n{医者|いしゃ}です。": { pos: "例文 3",
+      info: "說完「不是」以後，接著說出正確的答案（医者です），對話會比較自然。",
+      ex: [{ ja: "カリナさんは {先生|せんせい}ですか。\n……いいえ、{学生|がくせい}です。", zh: "卡莉娜小姐是老師嗎？\n……不，是學生。" }] },
+    "あの {方|かた}は どなたですか。\n……ワットさんです。 さくら{大学|だいがく}の {先生|せんせい}です。": { pos: "例文 4",
+      info: "・「あの方」是「あの人」的禮貌說法，「どなた」是「だれ」的禮貌說法。\n・N1 の N2：「さくら大学の 先生」＝櫻花大學的老師，「の」表示所屬。",
+      ex: [{ ja: "あの {方|かた}は どなたですか。\n……{社長|しゃちょう}です。", zh: "那位是哪位？\n……是總經理。" }, { ja: "わたしは さくら{大学|だいがく}の {学生|がくせい}です。", zh: "我是櫻花大學的學生。" }] },
+    "グプタさんは {会社員|かいしゃいん}ですか。\n……はい、{会社員|かいしゃいん}です。\nカリナさんも {会社員|かいしゃいん}ですか。\n……いいえ。［カリナさんは］ {学生|がくせい}です。": { pos: "例文 5",
+      info: "「も」＝也。\n問「カリナさんも～ですか」時，如果不是，就用「いいえ」回答，再說出正確的身分。",
+      ex: [{ ja: "わたしは {学生|がくせい}です。あなたも {学生|がくせい}ですか。\n……はい、わたしも {学生|がくせい}です。", zh: "我是學生。你也是學生嗎？\n……是，我也是學生。" }] },
+    "テレーザちゃんは {何歳|なんさい}ですか。\n……9{歳|さい}です。": { pos: "例文 6",
+      info: "問小孩年齡用「何歳ですか」；問長輩要用「おいくつですか」比較禮貌。\n「9歳」念 きゅうさい。",
+      ex: [{ ja: "ミラーさんは おいくつですか。\n……28{歳|さい}です。", zh: "米勒先生幾歲？\n……28 歲。", say: "ミラーさんは、おいくつですか。にじゅうはっさいです。" }] },
+  },
+
+  "l1-talk": {
+    "はじめまして。": { pos: "會話表現",
+      info: "第一次見面、自我介紹最開頭說的話。\n常見順序：はじめまして → 名字 → 從哪裡來、身分 → どうぞ よろしく。",
+      ex: [{ ja: "はじめまして。リンです。\nたいわんから {来|き}ました。{学生|がくせい}です。\nどうぞ よろしく おねがいします。", zh: "初次見面，我姓林。\n我從台灣來，是學生。\n請多多指教。" }] },
+    "～から きました。": { pos: "會話表現",
+      info: "地方＋から＋きました ＝ 從～來的。\n介紹自己的國家或城市時用。",
+      ex: [{ ja: "アメリカから {来|き}ました。", zh: "我是從美國來的。" }, { ja: "たいわんの たいぺいから {来|き}ました。", zh: "我是從台灣台北來的。" }] },
+    "たいわんから きました。": { pos: "會話表現",
+      info: "「たいわん」是台灣。\n想說得更仔細，可以說「たいわんの ○○から きました」，○○放城市名。",
+      ex: [{ ja: "はじめまして。たいわんから {来|き}ました。", zh: "初次見面，我從台灣來。" }] },
+    "［どうぞ］ よろしく ［おねがいします］。": { pos: "會話表現",
+      info: "自我介紹最後說的話。\n加上「どうぞ」和「おねがいします」更有禮貌；對朋友可以只說「よろしく」。",
+      ex: [{ ja: "どうぞ よろしく おねがいします。", zh: "請多多指教。（最禮貌）" }, { ja: "よろしく！", zh: "多指教！（對朋友）" }] },
+    "しつれいですが": { pos: "會話表現",
+      info: "想問對方名字、年齡等私人問題之前先說，讓語氣比較客氣。",
+      ex: [{ ja: "しつれいですが、お{名前|なまえ}は？", zh: "不好意思，請問您貴姓？" }] },
+    "おなまえは？": { pos: "會話表現",
+      info: "問對方的名字。\n「お」表示尊敬，所以不能用在自己的名字上。\n完整的說法是「お名前は 何ですか」。",
+      ex: [{ ja: "しつれいですが、お{名前|なまえ}は？\n……ミラーです。", zh: "不好意思，請問您貴姓？\n……我姓米勒。" }] },
+    "こちらは ～さんです。": { pos: "會話表現",
+      info: "介紹別人給對方認識時用。\n「こちら」是「這位」，比「この人」禮貌。",
+      ex: [{ ja: "こちらは ワットさんです。さくら{大学|だいがく}の {先生|せんせい}です。", zh: "這位是瓦特先生，是櫻花大學的老師。" }] },
+  },
+};
+
 const $ = (id) => document.getElementById(id);
 const store = {
   get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
@@ -582,13 +889,15 @@ function jaHTML(s, tail) {
   return lines.map((l, i) => '<span class="line">' + toRuby(l) + (i === lines.length - 1 && tail ? tail : "") + "</span>").join("");
 }
 // 要念出來的文字：去掉標音、括號、～、空白
+// 單一個漢字（方、来、人…）念法容易被讀錯，改用標音；兩個字以上的詞用漢字，語音比較準
 function toSpeech(s) {
-  return s.replace(/\{([^|}]+)\|[^}]+\}/g, "$1")
+  return s.replace(/\{([^|}]+)\|([^}]+)\}/g, (m, base, reading) => (Array.from(base).length === 1 ? reading : base))
     .replace(/[［］\[\]～]/g, "")
     .replace(/……/g, "")
     .replace(/\n/g, "。")
     .replace(/[ 　]/g, "")
-    .replace(/。。/g, "。");
+    .replace(/。。/g, "。")
+    .replace(/([？！])。/g, "$1");
 }
 const toKata = (s) => Array.from(s).map((ch) => String.fromCharCode(ch.charCodeAt(0) + 0x60)).join("");
 
@@ -625,15 +934,16 @@ UNITS.forEach((u) => {
   if (u.grid === "numbers") u.sections = numSections();
 });
 
-// 考試用的題庫：每個單元都轉成 { ja, sub, zh, say }
-function poolOf(u) {
+// 考試用的題庫：每個單元都轉成 { ja, sub, zh, say, unit, item }
+// full = true 時不管熟練度和補充設定（用來湊錯誤選項）
+function poolOf(u, full) {
   if (u.sections) {
     const cells = u.sections.flatMap((s) => s.cells).filter(Boolean);
-    if (u.grid === "numbers") return cells.map((c) => ({ ja: c.small, zh: c.big, say: c.say }));
-    return cells.map((c) => ({ ja: c.big, zh: c.small, say: c.say }));
+    if (u.grid === "numbers") return cells.map((c) => ({ ja: c.small, zh: c.big, say: c.say, unit: u }));
+    return cells.map((c) => ({ ja: c.big, zh: c.small, say: c.say, unit: u }));
   }
-  return u.items.filter((it) => showExtra || !it.extra)
-    .map((it) => ({ ja: it.ja, sub: it.kanji, zh: it.zh, say: sayOf(it) }));
+  return (full ? u.items : visibleItems(u))
+    .map((it) => ({ ja: it.ja, sub: it.kanji, zh: it.zh, say: sayOf(it), unit: u, item: it }));
 }
 const ASK = {
   kana: { ja2zh: "這個怎麼念？選出羅馬音", zh2ja: "選出對應的平假名" },
@@ -701,7 +1011,7 @@ if (!synth) {
 }
 
 let playingEl = null;
-function speak(text, el, after) {
+function speak(text, el, after, rateOverride) {
   if (!synth) { if (after) after(); return; }
   synth.cancel();
   synth.resume(); // Chrome 閒置久了會卡住，先叫醒
@@ -709,7 +1019,7 @@ function speak(text, el, after) {
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "ja-JP";
   if (jaVoice) u.voice = jaVoice;
-  u.rate = rate;
+  u.rate = rateOverride || rate;
   playingEl = el || null;
   if (el) el.classList.add("playing");
   let finished = false;
@@ -727,6 +1037,8 @@ function speak(text, el, after) {
 
 // ---- 學習畫面 ----
 const PLAY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>';
+const CHEVRON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const EXTRA_TAG = '<span class="tag">補充</span>';
 
 UNITS.forEach((u, i) => {
   const o = document.createElement("option");
@@ -737,12 +1049,139 @@ UNITS.forEach((u, i) => {
 
 let mode = ["both", "zh", "ja"].includes(store.get("mode")) ? store.get("mode") : "both";
 const MODE_HINT = {
-  zh: "先看中文想想日文怎麼說，點一下翻開日文並播放。",
-  ja: "先看日文想想是什麼意思，點一下翻開中文並播放。",
+  zh: "先看中文想想日文怎麼說，點一下翻開；翻開後再點一下看詳細。",
+  ja: "先看日文想想是什麼意思，點一下翻開；翻開後再點一下看詳細。",
 };
+let currentUnit = null;
 
-// 點一下：蓋住的先翻開，同時播放
-function tapCard(el, say) {
+// ---- 小提示 ----
+let toastTimer = null;
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 2200);
+}
+
+// ---- 熟練度（存在這台裝置的瀏覽器裡）----
+const LV = ["不熟", "普通", "熟練"];
+let prof = {};
+try { prof = JSON.parse(store.get("prof") || "{}") || {}; } catch (e) { prof = {}; }
+const keyOf = (u, it) => u.id + "|" + it.ja;
+const getLv = (key) => (prof[key] === 1 || prof[key] === 2 ? prof[key] : 0);
+let lvShow = new Set(String(store.get("lvShow") || "012").split("").map(Number).filter((n) => n >= 0 && n <= 2));
+if (!lvShow.size) lvShow = new Set([0, 1, 2]);
+const passExtra = (it) => showExtra || !it.extra;
+const visibleItems = (u) => u.items.filter((it) => passExtra(it) && lvShow.has(getLv(keyOf(u, it))));
+
+function setLv(key, v) {
+  if (v === 0) delete prof[key]; else prof[key] = v;
+  store.set("prof", JSON.stringify(prof));
+  document.querySelectorAll(".item[data-key]").forEach((row) => { if (row.dataset.key === key) paintLv(row); });
+  if (!$("detail").hidden && detail.rows[detail.i] && detail.rows[detail.i].dataset.key === key) paintDetailLv();
+  updateLvFilter();
+}
+function paintLv(row) {
+  const v = getLv(row.dataset.key);
+  const b = row.querySelector(".lv");
+  if (b) {
+    b.className = "lv lv" + v;
+    b.textContent = LV[v];
+    b.setAttribute("aria-label", "熟練度：" + LV[v] + "，點一下切換");
+  }
+  // 改成目前沒顯示的熟練度時先變淡，下次重新整理單元時才隱藏，避免畫面突然跳動
+  row.classList.toggle("faded", !!row.closest("#list") && !lvShow.has(v));
+}
+function toggleLvShow(n, rerender) {
+  if (lvShow.has(n)) {
+    if (lvShow.size === 1) { toast("至少要選一種熟練度"); return; }
+    lvShow.delete(n);
+  } else lvShow.add(n);
+  store.set("lvShow", Array.from(lvShow).sort().join(""));
+  rerender();
+}
+function lvChips(counts, rerender) {
+  const wrap = document.createElement("div");
+  wrap.className = "lv-filter";
+  LV.forEach((name, n) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "lvchip lv" + n;
+    b.setAttribute("aria-pressed", String(lvShow.has(n)));
+    b.innerHTML = '<i aria-hidden="true"></i>' + name + (counts ? " <b>" + counts[n] + "</b>" : "");
+    b.addEventListener("click", () => toggleLvShow(n, rerender));
+    wrap.appendChild(b);
+  });
+  return wrap;
+}
+function updateLvFilter() {
+  const bar = $("lvbar");
+  const u = currentUnit;
+  if (!u || !u.items || $("learn").hidden) return;
+  const counts = [0, 0, 0];
+  u.items.filter(passExtra).forEach((it) => { counts[getLv(keyOf(u, it))]++; });
+  const old = bar.querySelector(".lv-filter");
+  const fresh = lvChips(counts, () => render(location.hash.slice(1)));
+  if (old) old.replaceWith(fresh); else bar.appendChild(fresh);
+}
+
+// ---- 一行單字／句子 ----
+// 點文字：看詳細（蓋住時先翻開）；點喇叭：只播放；點彩色標籤：切換熟練度
+function itemRow(it, unit, maskable) {
+  const key = unit && unit.items ? keyOf(unit, it) : null;
+  const row = document.createElement("div");
+  row.className = "item" + (maskable ? " masked" : "") + (it.extra ? " extra" : "");
+  row._item = it;
+  row._unit = unit;
+  row._say = sayOf(it);
+  if (key) row.dataset.key = key;
+
+  const main = document.createElement("button");
+  main.type = "button";
+  main.className = "item-main";
+  main.innerHTML =
+    '<span class="text">' +
+      '<span class="ja ja-part' + (it.ja.includes("\n") ? " long" : "") + '">' + jaHTML(it.ja, it.extra ? EXTRA_TAG : "") + "</span>" +
+      (it.kanji ? '<span class="kanji ja-part">' + esc(it.kanji) + "</span>" : "") +
+      '<span class="ph ph-ja">點一下看日文</span>' +
+      '<span class="zh zh-part">' + esc(it.zh) + "</span>" +
+      '<span class="ph ph-zh">點一下看中文</span>' +
+      (it.note ? '<span class="note ja-part">' + esc(it.note) + "</span>" : "") +
+    "</span>" +
+    (key ? '<span class="chev">' + CHEVRON + "</span>" : "");
+  main.setAttribute("aria-label", (key ? "看詳細：" : "播放：") + toSpeech(it.ja));
+  main.addEventListener("click", () => {
+    stopAll();
+    if (mode !== "both" && row.classList.contains("masked") && row.closest("#list")) {
+      row.classList.remove("masked");
+      updateRevealAll();
+      speak(row._say, row);
+    } else if (key) openDetail(row);
+    else speak(row._say, row);
+  });
+  row.appendChild(main);
+
+  if (key) {
+    const lv = document.createElement("button");
+    lv.type = "button";
+    lv.className = "lv";
+    lv.addEventListener("click", () => setLv(key, (getLv(key) + 1) % 3));
+    row.appendChild(lv);
+  }
+  const play = document.createElement("button");
+  play.type = "button";
+  play.className = "play";
+  play.innerHTML = PLAY_ICON;
+  play.setAttribute("aria-label", "播放：" + toSpeech(it.ja));
+  play.addEventListener("click", () => { stopAll(); speak(row._say, row); });
+  row.appendChild(play);
+  if (key) paintLv(row);
+  return row;
+}
+
+// 五十音、數字的格子：點一下播放（蓋住時順便翻開）
+function tapCell(el, say) {
   stopAll();
   if (el.classList.contains("masked")) {
     el.classList.remove("masked");
@@ -751,27 +1190,110 @@ function tapCard(el, say) {
   speak(say, el);
 }
 
-function itemButton(it, maskable) {
-  const b = document.createElement("button");
-  b.type = "button";
-  b.className = "item" + (maskable ? " masked" : "") + (it.extra ? " extra" : "");
-  b.innerHTML =
-    '<span class="text">' +
-      '<span class="ja ja-part' + (it.ja.includes("\n") ? " long" : "") + '">' + jaHTML(it.ja, it.extra ? '<span class="tag">補充</span>' : "") + "</span>" +
-      (it.kanji ? '<span class="kanji ja-part">' + esc(it.kanji) + "</span>" : "") +
-      '<span class="ph ph-ja">點一下看日文</span>' +
-      '<span class="zh zh-part">' + esc(it.zh) + "</span>" +
-      '<span class="ph ph-zh">點一下看中文</span>' +
-      (it.note ? '<span class="note ja-part">' + esc(it.note) + "</span>" : "") +
-    "</span>" +
-    '<span class="play">' + PLAY_ICON + "</span>";
-  b.setAttribute("aria-label", "播放：" + toSpeech(it.ja));
-  b._say = sayOf(it);
-  b.addEventListener("click", () => tapCard(b, b._say));
-  return b;
+// ---- 詳細頁 ----
+const detail = { rows: [], i: 0, returnFocus: null };
+function openDetail(row) {
+  const scope = row.parentElement;
+  detail.rows = Array.from(scope.querySelectorAll(".item[data-key]")).filter((r) => r.offsetParent !== null);
+  detail.i = Math.max(0, detail.rows.indexOf(row));
+  renderDetail();
+  $("detail").hidden = false;
+  $("detail").scrollTop = 0;
+  document.documentElement.classList.add("sheet-open");
+  document.querySelector("header").inert = true;
+  document.querySelector("main").inert = true;
+  $("d-close").focus({ preventScroll: true });
 }
+function closeDetail() {
+  if ($("detail").hidden) return;
+  if (synth) synth.cancel();
+  $("detail").hidden = true;
+  document.documentElement.classList.remove("sheet-open");
+  document.querySelector("header").inert = false;
+  document.querySelector("main").inert = false;
+  const row = detail.rows[detail.i];
+  if (row && row.isConnected) {
+    row.scrollIntoView({ block: "nearest" });
+    row.querySelector(".item-main").focus({ preventScroll: true });
+  }
+}
+function navDetail(step) {
+  const j = detail.i + step;
+  if (j < 0 || j >= detail.rows.length) return;
+  if (synth) synth.cancel();
+  detail.i = j;
+  renderDetail();
+  $("detail").scrollTop = 0;
+}
+function paintDetailLv() {
+  const key = detail.rows[detail.i].dataset.key;
+  const v = getLv(key);
+  document.querySelectorAll("#d-lv button").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.lv) === v)));
+}
+function renderDetail() {
+  const row = detail.rows[detail.i];
+  const it = row._item, u = row._unit, key = row.dataset.key;
+  const d = (DETAILS[u.id] || {})[it.ja] || {};
+  $("d-pos").textContent = (detail.i + 1) + " / " + detail.rows.length;
+  $("d-prev").disabled = detail.i === 0;
+  $("d-next").disabled = detail.i === detail.rows.length - 1;
+  $("d-body").innerHTML =
+    '<section class="d-hero">' +
+      '<span class="eyebrow">' + esc(u.title.replace(/　/g, " ")) + (d.pos ? "・" + esc(d.pos) : "") + "</span>" +
+      '<h2 class="d-ja' + (it.ja.includes("\n") ? " long" : "") + '" id="d-title">' + jaHTML(it.ja, it.extra ? EXTRA_TAG : "") + "</h2>" +
+      (it.kanji ? '<div class="d-kanji">' + esc(it.kanji) + "</div>" : "") +
+      '<div class="d-zh">' + esc(it.zh) + "</div>" +
+      (it.note ? '<div class="note">' + esc(it.note) + "</div>" : "") +
+      '<div class="d-actions">' +
+        '<button type="button" class="primary d-play" id="d-play">' + PLAY_ICON + "<span>播放</span></button>" +
+        '<button type="button" class="ghost d-play" id="d-slow">' + PLAY_ICON + "<span>慢速播放</span></button>" +
+      "</div>" +
+    "</section>" +
+    '<section class="panel"><h3>熟練度</h3><div class="seg lvseg" id="d-lv"></div></section>' +
+    (d.info ? '<section class="panel"><h3>說明</h3><p class="d-info">' + esc(d.info) + "</p></section>" : "") +
+    (d.ex && d.ex.length ? '<section class="panel"><h3>例句</h3><div class="ex-list" id="d-ex"></div></section>' : "");
 
-// 全部播放：一個接一個念，畫面跟著捲動
+  $("d-play").onclick = (e) => speak(row._say, e.currentTarget);
+  $("d-slow").onclick = (e) => speak(row._say, e.currentTarget, null, 0.6);
+  LV.forEach((name, n) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "lv" + n;
+    b.dataset.lv = n;
+    b.innerHTML = '<i aria-hidden="true"></i>' + name;
+    b.addEventListener("click", () => setLv(key, n));
+    $("d-lv").appendChild(b);
+  });
+  paintDetailLv();
+  (d.ex || []).forEach((ex) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "ex";
+    b.innerHTML =
+      '<span class="text"><span class="ja' + (ex.ja.includes("\n") ? " long" : "") + '">' + jaHTML(ex.ja) + "</span>" +
+      '<span class="zh">' + esc(ex.zh) + "</span></span>" +
+      '<span class="play">' + PLAY_ICON + "</span>";
+    b.setAttribute("aria-label", "播放例句：" + toSpeech(ex.ja));
+    b.addEventListener("click", () => speak(ex.say || toSpeech(ex.ja), b));
+    $("d-ex").appendChild(b);
+  });
+}
+$("d-close").addEventListener("click", closeDetail);
+$("d-prev").addEventListener("click", () => navDetail(-1));
+$("d-next").addEventListener("click", () => navDetail(1));
+// 手機上左右滑動切換上一個／下一個
+(() => {
+  let x0 = null, y0 = null;
+  $("d-body").addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  $("d-body").addEventListener("touchend", (e) => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    x0 = null;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) navDetail(dx < 0 ? 1 : -1);
+  }, { passive: true });
+})();
+
+// ---- 全部播放：一個接一個念，畫面跟著捲動 ----
 let autoplay = null;
 function updatePlayAll() {
   const b = $("play-all");
@@ -788,6 +1310,7 @@ function stopAll() {
 function playAll() {
   if (autoplay) { stopAll(); return; }
   const els = Array.from(document.querySelectorAll("#list .item, #list .cell")).filter((el) => el.offsetParent !== null);
+  if (!els.length) return;
   const token = autoplay = {};
   updatePlayAll();
   let i = 0;
@@ -802,6 +1325,7 @@ function playAll() {
   step();
 }
 $("play-all").addEventListener("click", playAll);
+
 function setShowExtra(on) {
   showExtra = on;
   store.set("extra", on ? "on" : "off");
@@ -836,7 +1360,7 @@ $("reveal-all").addEventListener("click", () => {
 });
 
 function renderUnit(idx) {
-  const unit = UNITS[idx];
+  const unit = currentUnit = UNITS[idx];
   $("unit").value = unit.id;
   $("unit-title").textContent = unit.title;
   const list = $("list");
@@ -855,15 +1379,14 @@ function renderUnit(idx) {
         n++;
         const b = document.createElement("button");
         b.type = "button";
-        b.className = "cell";
-        b.classList.add("masked");
+        b.className = "cell masked";
         // 五十音：大字是日文；數字：大字是數字（當作中文那一面）
         const bigPart = unit.grid === "numbers" ? "zh-part" : "ja-part";
         const smallPart = unit.grid === "numbers" ? "ja-part" : "zh-part";
         b.innerHTML = '<span class="k ' + bigPart + '">' + esc(c.big) + '</span><span class="r ' + smallPart + '">' + (unit.grid === "numbers" ? markLong(esc(c.small)) : esc(c.small)) + "</span>";
         b.setAttribute("aria-label", "播放：" + c.big + "（" + c.small + "）");
         b._say = c.say;
-        b.addEventListener("click", () => tapCard(b, c.say));
+        b.addEventListener("click", () => tapCell(b, c.say));
         g.appendChild(b);
       });
       list.appendChild(g);
@@ -871,8 +1394,15 @@ function renderUnit(idx) {
     $("unit-count").textContent = n + " 個";
   } else {
     list.className = "list";
-    $("unit-count").textContent = unit.items.filter((it) => showExtra || !it.extra).length + " 句";
-    unit.items.forEach((it) => list.appendChild(itemButton(it, true)));
+    const items = visibleItems(unit);
+    $("unit-count").textContent = items.length + " 句";
+    if (!items.length) {
+      const empty = document.createElement("p");
+      empty.className = "empty";
+      empty.textContent = "這個單元沒有符合目前熟練度的內容。可以在上面多選幾種熟練度。";
+      list.appendChild(empty);
+    }
+    items.forEach((it) => list.appendChild(itemRow(it, unit, true)));
   }
   $("unit-eyebrow").textContent = "單元 " + (idx + 1) + " / " + UNITS.length + "・" + $("unit-count").textContent;
   $("prev").disabled = idx === 0;
@@ -885,7 +1415,11 @@ function renderUnit(idx) {
   $("cho-legend").hidden = unit.grid === "kana";
   $("extra-switch").hidden = !(unit.items || []).some((it) => it.extra);
   $("show-extra").checked = showExtra;
-  list.dataset.extra = showExtra ? "on" : "off";
+  $("lvbar").hidden = !unit.items;
+  $("learn-tip").textContent = unit.items
+    ? "點文字看詳細和例句，點喇叭只播放，點彩色標籤切換熟練度。沒有聲音的話，請確認手機沒有開靜音。"
+    : "點一格就會念出來。沒有聲音的話，請確認手機沒有開靜音。";
+  updateLvFilter();
   setMode(mode);
 }
 
@@ -896,7 +1430,7 @@ const quiz = {
   units: new Set((store.get("quizUnits") || "").split(",").filter((id) => UNITS.some((u) => u.id === id))),
   type: store.get("quizType") || "mix",
   count: parseInt(store.get("quizCount"), 10) || 10,
-  qs: [], i: 0, right: 0, wrong: [],
+  qs: [], i: 0, right: [], wrong: [],
 };
 if (!quiz.units.size) quiz.units.add("kana");
 
@@ -928,43 +1462,55 @@ function renderSetup() {
       '<span class="links"><button type="button" class="link" id="q-all">全選</button><button type="button" class="link" id="q-none">清除</button></span></div>' +
       '<div class="checks" id="q-units"></div>' +
       '<label class="check extra-check" for="q-extra"><input type="checkbox" id="q-extra"' + (showExtra ? " checked" : "") + '><span class="check-name">包含「補充」的單字和句子</span></label></section>' +
+    '<section class="panel"><h3>熟練度</h3><div id="q-lv"></div><p class="hint">只套用在單字和句子；五十音和數字不分熟練度。</p></section>' +
     '<section class="panel"><h3>題型</h3><div id="q-type"></div></section>' +
     '<section class="panel"><h3>題數</h3><div id="q-count"></div></section>' +
     '<button type="button" class="primary" id="q-start">開始考試</button>';
   const checks = $("q-units");
+  let total = 0;
+  const lvCounts = [0, 0, 0];
   UNITS.forEach((u) => {
     const id = "q-u-" + u.id;
+    const n = poolOf(u).length;
+    if (quiz.units.has(u.id)) {
+      total += n;
+      if (u.items) u.items.filter(passExtra).forEach((it) => { lvCounts[getLv(keyOf(u, it))]++; });
+    }
     const lab = document.createElement("label");
     lab.className = "check";
     lab.setAttribute("for", id);
     lab.innerHTML = '<input type="checkbox" id="' + id + '"' + (quiz.units.has(u.id) ? " checked" : "") + ">" +
-      '<span class="check-name">' + esc(u.title) + '</span><span class="count">' + poolOf(u).length + "</span>";
+      '<span class="check-name">' + esc(u.title) + '</span><span class="count">' + n + "</span>";
     lab.querySelector("input").addEventListener("change", (e) => {
       if (e.target.checked) quiz.units.add(u.id); else quiz.units.delete(u.id);
       renderSetup();
     });
     checks.appendChild(lab);
   });
+  $("q-lv").appendChild(lvChips(lvCounts, renderSetup));
   $("q-extra").addEventListener("change", (e) => { setShowExtra(e.target.checked); renderSetup(); });
   $("q-all").onclick = () => { UNITS.forEach((u) => quiz.units.add(u.id)); renderSetup(); };
   $("q-none").onclick = () => { quiz.units.clear(); renderSetup(); };
   $("q-type").appendChild(seg(TYPES, quiz.type, (v) => { quiz.type = v; }));
   $("q-count").appendChild(seg(COUNTS.map((n) => [n, n + " 題"]), quiz.count, (v) => { quiz.count = v; }));
   const start = $("q-start");
-  start.disabled = quiz.units.size === 0;
-  if (start.disabled) start.textContent = "請先勾選範圍";
+  start.disabled = total === 0;
+  if (quiz.units.size === 0) start.textContent = "請先勾選範圍";
+  else if (total === 0) start.textContent = "沒有符合條件的題目";
+  else if (total < quiz.count) start.textContent = "開始考試（共 " + total + " 題）";
   start.onclick = startQuiz;
 }
 
 function makeQuestions() {
   const chosen = UNITS.filter((u) => quiz.units.has(u.id));
-  const all = chosen.flatMap((u) => poolOf(u).map((p) => ({ ...p, unit: u })));
+  const all = chosen.flatMap((u) => poolOf(u));
   return shuffle(all).slice(0, quiz.count).map((q) => {
     const type = quiz.type === "mix" ? ["ja2zh", "zh2ja", "listen"][Math.floor(Math.random() * 3)] : quiz.type;
     const field = type === "ja2zh" ? "zh" : "ja";
     const seen = new Set([q[field]]);
     const opts = [q];
-    const sources = [shuffle(poolOf(q.unit)), shuffle(all)];
+    // 錯誤選項：先從同一個單元挑，不夠再放寬（不管熟練度、補充），最後才用其他單元
+    const sources = [shuffle(poolOf(q.unit)), shuffle(poolOf(q.unit, true)), shuffle(all)];
     for (const src of sources) {
       for (const p of src) {
         if (opts.length >= 4) break;
@@ -979,7 +1525,7 @@ function makeQuestions() {
 
 function startQuiz() {
   quiz.qs = makeQuestions();
-  quiz.i = 0; quiz.right = 0; quiz.wrong = [];
+  quiz.i = 0; quiz.right = []; quiz.wrong = [];
   renderQuestion();
 }
 
@@ -999,7 +1545,7 @@ function renderQuestion() {
       '<div class="count">點喇叭可以再聽一次</div>';
   }
   box.innerHTML =
-    '<div class="unit-head"><h2>第 ' + (quiz.i + 1) + " / " + total + ' 題</h2><span class="count">答對 ' + quiz.right + "</span></div>" +
+    '<div class="unit-head"><h2>第 ' + (quiz.i + 1) + " / " + total + ' 題</h2><span class="count">答對 ' + quiz.right.length + "</span></div>" +
     '<div class="bar"><span style="width:' + (quiz.i / total * 100) + '%"></span></div>' +
     '<section class="prompt"><div class="ask">' + esc(askOf(q.unit, type)) + "</div>" + prompt + "</section>" +
     '<div class="opts" id="q-opts"></div>' +
@@ -1008,26 +1554,27 @@ function renderQuestion() {
     (quiz.i === 0 ? '<p class="hint kb-hint">有鍵盤的話：按 <kbd>1</kbd>～<kbd>4</kbd> 作答，<kbd>Enter</kbd> 下一題，<kbd>空白鍵</kbd> 再聽一次。</p>' : "");
   if ($("q-say")) $("q-say").onclick = (e) => speak(q.say, e.currentTarget);
   const wrap = $("q-opts");
+  const btns = new Map();
   opts.forEach((o) => {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "opt" + (field === "ja" ? " ja-opt" : "");
     b.innerHTML = field === "ja" ? jaHTML(o.ja) : esc(o.zh);
     b.dataset.n = wrap.children.length + 1;
-    b.addEventListener("click", () => answer(o, b));
+    b.addEventListener("click", () => answer(o, b, btns));
     wrap.appendChild(b);
-    o._btn = b;
+    btns.set(o, b);
   });
   $("q-quit").onclick = showResult;
   if (type === "listen") speak(q.say, $("q-say"));
 }
 
-function answer(o, btn) {
-  const { q, opts } = quiz.qs[quiz.i];
-  opts.forEach((x) => { x._btn.disabled = true; });
+function answer(o, btn, btns) {
+  const { q } = quiz.qs[quiz.i];
+  btns.forEach((b) => { b.disabled = true; });
   const ok = o === q;
-  if (ok) quiz.right++; else quiz.wrong.push(q);
-  q._btn.classList.add("right");
+  (ok ? quiz.right : quiz.wrong).push(q);
+  btns.get(q).classList.add("right");
   if (!ok) btn.classList.add("wrong");
   const last = quiz.i === quiz.qs.length - 1;
   const token = quiz.token = {};
@@ -1056,26 +1603,46 @@ function answer(o, btn) {
 function showResult() {
   quiz.token = null;
   if (synth) synth.cancel();
-  const done = quiz.wrong.length + quiz.right;
+  const done = quiz.wrong.length + quiz.right.length;
   const total = quiz.qs.length;
-  const pct = done ? Math.round(quiz.right / done * 100) : 0;
+  const pct = done ? Math.round(quiz.right.length / done * 100) : 0;
+  // 只有單字、句子有熟練度
+  const keyed = (arr) => arr.filter((x) => x.item).map((x) => keyOf(x.unit, x.item));
+  const wrongUp = keyed(quiz.wrong).filter((k) => getLv(k) > 0);
+  const rightUp = keyed(quiz.right).filter((k) => getLv(k) < 2);
   const box = $("quiz");
   box.innerHTML =
     '<div class="unit-head"><h2>成績</h2></div>' +
-    '<section class="prompt"><div class="score">' + quiz.right + '<small> / ' + done + "</small></div>" +
+    '<section class="prompt"><div class="score">' + quiz.right.length + '<small> / ' + done + "</small></div>" +
     '<div class="count">' + (done < total ? "（共 " + total + " 題，做了 " + done + " 題）" : "答對率 " + pct + "%") + "</div></section>" +
-    (quiz.wrong.length ? '<h3 class="sub-h">答錯的題目（點一下聽發音）</h3><div class="list" id="q-wrong"></div>' : "") +
+    (wrongUp.length || rightUp.length ? '<section class="panel"><h3>更新熟練度</h3><div class="row" id="q-lvup"></div></section>' : "") +
+    (quiz.wrong.length ? '<h3 class="sub-h">答錯的題目</h3><p class="hint">點文字看詳細，點喇叭聽發音。</p><div class="list" id="q-wrong"></div>' : "") +
     '<div class="row"><button type="button" class="primary" id="q-again">再考一次</button>' +
     '<button type="button" class="ghost" id="q-setup">重新選範圍</button></div>';
-  if (quiz.wrong.length) {
-    quiz.wrong.forEach((w) => $("q-wrong").appendChild(itemButton({ ja: w.ja, kanji: w.sub, zh: w.zh, say: w.say }, false)));
-  }
+  const addLvBtn = (keys, label, to) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "ghost";
+    b.textContent = label;
+    b.addEventListener("click", () => {
+      keys.forEach((k) => setLv(k, to(getLv(k))));
+      b.disabled = true;
+      b.textContent = "已更新 " + keys.length + " 個";
+    });
+    $("q-lvup").appendChild(b);
+  };
+  if (rightUp.length) addLvBtn(rightUp, "答對的 " + rightUp.length + " 個升一級", (v) => Math.min(2, v + 1));
+  if (wrongUp.length) addLvBtn(wrongUp, "答錯的 " + wrongUp.length + " 個改回「不熟」", () => 0);
+  quiz.wrong.forEach((w) => {
+    $("q-wrong").appendChild(w.item ? itemRow(w.item, w.unit, false) : itemRow({ ja: w.ja, kanji: w.sub, zh: w.zh, say: w.say }, null, false));
+  });
   $("q-again").onclick = () => { startQuiz(); window.scrollTo(0, 0); };
   $("q-setup").onclick = () => { renderSetup(); window.scrollTo(0, 0); };
 }
 
 // ---- 切換畫面 ----
 function render(hash) {
+  closeDetail();
   stopAll();
   if (synth) synth.cancel();
   quiz.token = null;
@@ -1100,7 +1667,14 @@ $("tab-learn").addEventListener("click", () => go(store.get("unit") || UNITS[0].
 $("tab-quiz").addEventListener("click", () => go("quiz"));
 window.addEventListener("hashchange", () => render(location.hash.slice(1)));
 document.addEventListener("keydown", (e) => {
-  if ($("quiz").hidden || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (!$("detail").hidden) {
+    if (e.key === "Escape") { e.preventDefault(); closeDetail(); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); navDetail(-1); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); navDetail(1); }
+    return;
+  }
+  if ($("quiz").hidden) return;
   const tag = (e.target.tagName || "").toLowerCase();
   if (tag === "input" || tag === "select") return;
   const opt = document.querySelector('.opt[data-n="' + e.key + '"]');
