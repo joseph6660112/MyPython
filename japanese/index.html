@@ -117,6 +117,21 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 .play svg { width: 18px; height: 18px; fill: currentColor; }
 .item.playing .play { background: var(--ai); color: var(--sheet); }
 
+/* 五十音表 */
+.grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.cell {
+  display: grid; place-items: center; gap: 0; aspect-ratio: 1 / 1; max-width: 100%;
+  font: inherit; color: inherit; cursor: pointer; padding: 4px;
+  background: var(--sheet); border: 1px solid var(--line); border-radius: 12px;
+  -webkit-tap-highlight-color: transparent;
+}
+.cell:hover { border-color: var(--ai); }
+.cell:focus-visible { outline: 2px solid var(--ai); outline-offset: 2px; }
+.cell.playing { background: var(--ai); color: var(--sheet); border-color: var(--ai); }
+.cell .k { font-family: var(--font-ja); font-size: clamp(1.6rem, 7vw, 2.4rem); line-height: 1.1; }
+.cell .r { font-size: .8rem; color: var(--muted); letter-spacing: .04em; }
+.cell.playing .r { color: inherit; }
+.gap { aspect-ratio: 1 / 1; }
 .nav { display: flex; justify-content: space-between; gap: 12px; }
 .nav button {
   font: inherit; font-size: .9rem; color: var(--ai); background: none; cursor: pointer;
@@ -165,7 +180,14 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 
 <script>
 // 寫法說明：{漢字|かな} 會變成上方小字標音；「補充」= 課本上的手寫筆記
+const KANA_ROWS = [
+  "あa いi うu えe おo", "かka きki くku けke こko", "さsa しshi すsu せse そso",
+  "たta ちchi つtsu てte とto", "なna にni ぬnu ねne のno", "はha ひhi ふfu へhe ほho",
+  "まma みmi むmu めme もmo", "やya - ゆyu - よyo", "らra りri るru れre ろro",
+  "わwa - - - をo", "んn - - - -",
+];
 const UNITS = [
+  { id: "kana", title: "五十音（平假名）", grid: KANA_ROWS },
   {
     id: "greet", title: "每日的招呼語",
     items: [
@@ -351,9 +373,28 @@ function render(id) {
   if (synth) synth.cancel();
   $("unit").value = unit.id;
   $("unit-title").textContent = unit.title;
-  $("unit-count").textContent = unit.items.length + " 句";
   const list = $("list");
   list.innerHTML = "";
+  if (unit.grid) {
+    list.className = "grid";
+    let n = 0;
+    unit.grid.forEach((row) => row.split(" ").forEach((c) => {
+      if (c === "-") { const g = document.createElement("span"); g.className = "gap"; list.appendChild(g); return; }
+      n++;
+      const kana = c[0], roma = c.slice(1);
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "cell";
+      b.innerHTML = '<span class="k">' + kana + '</span><span class="r">' + roma + "</span>";
+      b.setAttribute("aria-label", "播放：" + kana);
+      // 用片假名念單一個音，避免は、へ、を被當成助詞
+      b.addEventListener("click", () => speak(String.fromCharCode(kana.charCodeAt(0) + 0x60), b));
+      list.appendChild(b);
+    }));
+    $("unit-count").textContent = n + " 個";
+  } else {
+  list.className = "list";
+  $("unit-count").textContent = unit.items.length + " 句";
   unit.items.forEach((it) => {
     const b = document.createElement("button");
     b.type = "button";
@@ -371,6 +412,7 @@ function render(id) {
     b.addEventListener("click", () => speak(it.say || toSpeech(it.ja), b));
     list.appendChild(b);
   });
+  }
   $("prev").disabled = idx === 0;
   $("next").disabled = idx === UNITS.length - 1;
   $("prev").onclick = () => go(UNITS[idx - 1].id);
