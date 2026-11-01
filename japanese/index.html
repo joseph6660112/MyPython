@@ -8,7 +8,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&family=Klee+One:wght@600&display=swap">
 <style>
 /* 版面：單欄講義，上方固定「單元選單」，每一行點一下就念出來 */
 :root {
@@ -30,6 +30,7 @@
   --lv1: #9a6a00; --lv1-soft: #fbf0d3;   /* 普通 */
   --lv2: #1d7a4c; --lv2-soft: #e1f2e8;   /* 熟練 */
   --font-ja: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+  --font-hand: "Klee One", "Zen Kaku Gothic New", "Hiragino Sans", sans-serif;  /* 手寫範本用的教科書風字體 */
   --font-zh: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
@@ -325,6 +326,45 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 
 /* 日文換行：在空格處換行，一個詞放不下才從中間斷 */
 .ja, .d-ja, .q-ja, .opt.ja-opt, .bw-ja { word-break: keep-all; overflow-wrap: anywhere; }
+
+/* 手寫五十音 */
+.w-prompt { gap: 6px; padding-block: 16px; }
+.q-roma { font-size: 2.8rem; font-weight: 700; letter-spacing: .06em; color: var(--ai); line-height: 1.1; }
+.write-area { display: grid; gap: 12px; justify-items: center; }
+@media (min-width: 600px) { .write-area { grid-template-columns: auto auto; justify-content: center; align-items: center; } }
+.pad-wrap { position: relative; width: min(100%, 340px); aspect-ratio: 1 / 1; }
+#pad {
+  display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair;
+  background: var(--sheet); border: 2px solid var(--line); border-radius: 16px;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+.pad-hint { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); opacity: .6; pointer-events: none; }
+.answer-box {
+  display: grid; justify-items: center; gap: 2px; min-width: 140px;
+  background: var(--sheet); border: 1px solid var(--line); border-radius: 16px; padding: 12px 24px;
+}
+.w-kana { font-family: var(--font-hand); font-weight: 600; font-size: 4.2rem; line-height: 1.15; color: var(--ai); }
+.w-tools { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 8px; }
+.w-tools button { padding-inline: 8px; }
+.judge { display: grid; gap: 10px; background: var(--ai-soft); border-radius: 12px; padding: 12px 14px; }
+.judge .fb-text { color: var(--ink); }
+.judge-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.bad-btn { color: var(--bad); border-color: var(--bad); background: var(--sheet); }
+.primary.ok-btn { background: var(--ok); }
+.w-review { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.w-card {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: center; text-align: center;
+  font: inherit; color: inherit; cursor: pointer;
+  background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; padding: 10px;
+}
+.w-card.bad { border-color: var(--bad); }
+.w-mine { display: grid; place-items: center; aspect-ratio: 1 / 1; border: 1px dashed var(--line); border-radius: 10px; overflow: hidden; }
+.w-mine img { width: 100%; height: 100%; display: block; }
+.w-right { display: grid; justify-items: center; }
+.w-right .w-kana { font-size: 2.4rem; }
+.w-badge { grid-column: 1 / -1; justify-self: center; font-size: .76rem; font-weight: 700; border-radius: 999px; padding: 2px 10px; }
+.w-card.ok .w-badge { background: var(--ok-soft); color: var(--ok); }
+.w-card.bad .w-badge { background: var(--bad-soft); color: var(--bad); }
 
 /* 教學 */
 .guide-list { display: grid; gap: 10px; }
@@ -1684,14 +1724,16 @@ function renderUnit(idx) {
 }
 
 // ---- 考試 ----
-const TYPES = [["mix", "混合"], ["ja2zh", "看日文選答案"], ["zh2ja", "看中文選日文"], ["listen", "聽音選日文"]];
+const TYPES = [["mix", "混合"], ["ja2zh", "看日文選答案"], ["zh2ja", "看中文選日文"], ["listen", "聽音選日文"], ["write", "手寫五十音"]];
 const COUNTS = [10, 20, 30, 50];
 const quiz = {
   units: new Set((store.get("quizUnits") || "").split(",").filter((id) => UNITS.some((u) => u.id === id))),
   type: store.get("quizType") || "mix",
   count: parseInt(store.get("quizCount"), 10) || 10,
   qs: [], i: 0, right: [], wrong: [],
+  kanaSecs: new Set((store.get("quizKana") || "清音").split(",").filter((x) => ["清音", "濁音・半濁音", "拗音"].includes(x))),
 };
+if (!quiz.kanaSecs.size) quiz.kanaSecs.add("清音");
 if (!quiz.units.size) quiz.units.add("kana");
 
 function seg(options, current, onPick) {
@@ -1711,57 +1753,87 @@ function saveQuiz() {
   store.set("quizUnits", Array.from(quiz.units).join(","));
   store.set("quizType", quiz.type);
   store.set("quizCount", String(quiz.count));
+  store.set("quizKana", Array.from(quiz.kanaSecs).join(","));
 }
 
 function renderSetup() {
   saveQuiz();
   const box = $("quiz");
+  const isWrite = quiz.type === "write";
   box.innerHTML =
     '<div class="unit-head"><h2>出考卷</h2></div>' +
-    '<section class="panel"><div class="panel-head"><h3>範圍</h3>' +
-      '<span class="links"><button type="button" class="link" id="q-all">全選</button><button type="button" class="link" id="q-none">清除</button></span></div>' +
-      '<div class="checks" id="q-units"></div>' +
-      '<label class="check extra-check" for="q-extra"><input type="checkbox" id="q-extra"' + (showExtra ? " checked" : "") + '><span class="check-name">包含「補充」的單字和句子</span></label></section>' +
-    '<section class="panel"><h3>熟練度</h3><div id="q-lv"></div><p class="hint">只套用在單字和句子；五十音和數字不分熟練度。</p></section>' +
     '<section class="panel"><h3>題型</h3><div id="q-type"></div></section>' +
+    (isWrite
+      ? '<section class="panel"><h3>五十音範圍</h3><div id="q-kana"></div>' +
+        '<p class="hint">看羅馬音，用手指或觸控筆寫出平假名，寫完再自己對答案。</p></section>'
+      : '<section class="panel"><div class="panel-head"><h3>範圍</h3>' +
+          '<span class="links"><button type="button" class="link" id="q-all">全選</button><button type="button" class="link" id="q-none">清除</button></span></div>' +
+          '<div class="checks" id="q-units"></div>' +
+          '<label class="check extra-check" for="q-extra"><input type="checkbox" id="q-extra"' + (showExtra ? " checked" : "") + '><span class="check-name">包含「補充」的單字和句子</span></label></section>' +
+        '<section class="panel"><h3>熟練度</h3><div id="q-lv"></div><p class="hint">只套用在單字和句子；五十音和數字不分熟練度。</p></section>') +
     '<section class="panel"><h3>題數</h3><div id="q-count"></div></section>' +
     '<button type="button" class="primary" id="q-start">開始考試</button>';
-  const checks = $("q-units");
-  let total = 0;
-  const lvCounts = [0, 0, 0];
-  UNITS.forEach((u) => {
-    const id = "q-u-" + u.id;
-    const n = poolOf(u).length;
-    if (quiz.units.has(u.id)) {
-      total += n;
-      if (u.items) u.items.filter(passExtra).forEach((it) => { lvCounts[getLv(keyOf(u, it))]++; });
-    }
-    const lab = document.createElement("label");
-    lab.className = "check";
-    lab.setAttribute("for", id);
-    lab.innerHTML = '<input type="checkbox" id="' + id + '"' + (quiz.units.has(u.id) ? " checked" : "") + ">" +
-      '<span class="check-name">' + esc(u.title) + '</span><span class="count">' + n + "</span>";
-    lab.querySelector("input").addEventListener("change", (e) => {
-      if (e.target.checked) quiz.units.add(u.id); else quiz.units.delete(u.id);
-      renderSetup();
-    });
-    checks.appendChild(lab);
-  });
-  $("q-lv").appendChild(lvChips(lvCounts, renderSetup));
-  $("q-extra").addEventListener("change", (e) => { setShowExtra(e.target.checked); renderSetup(); });
-  $("q-all").onclick = () => { UNITS.forEach((u) => quiz.units.add(u.id)); renderSetup(); };
-  $("q-none").onclick = () => { quiz.units.clear(); renderSetup(); };
   $("q-type").appendChild(seg(TYPES, quiz.type, (v) => { quiz.type = v; }));
   $("q-count").appendChild(seg(COUNTS.map((n) => [n, n + " 題"]), quiz.count, (v) => { quiz.count = v; }));
+  let total = 0;
+  if (isWrite) {
+    const wrap = document.createElement("div");
+    wrap.className = "seg";
+    kanaUnit().sections.forEach((sec) => {
+      const n = sec.cells.filter(Boolean).length;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = sec.label + " " + n;
+      b.setAttribute("aria-pressed", String(quiz.kanaSecs.has(sec.label)));
+      b.addEventListener("click", () => {
+        if (quiz.kanaSecs.has(sec.label)) {
+          if (quiz.kanaSecs.size === 1) { toast("至少要選一種"); return; }
+          quiz.kanaSecs.delete(sec.label);
+        } else quiz.kanaSecs.add(sec.label);
+        renderSetup();
+      });
+      wrap.appendChild(b);
+    });
+    $("q-kana").appendChild(wrap);
+    total = kanaPool().length;
+  } else {
+    const checks = $("q-units");
+    const lvCounts = [0, 0, 0];
+    UNITS.forEach((u) => {
+      const id = "q-u-" + u.id;
+      const n = poolOf(u).length;
+      if (quiz.units.has(u.id)) {
+        total += n;
+        if (u.items) u.items.filter(passExtra).forEach((it) => { lvCounts[getLv(keyOf(u, it))]++; });
+      }
+      const lab = document.createElement("label");
+      lab.className = "check";
+      lab.setAttribute("for", id);
+      lab.innerHTML = '<input type="checkbox" id="' + id + '"' + (quiz.units.has(u.id) ? " checked" : "") + ">" +
+        '<span class="check-name">' + esc(u.title) + '</span><span class="count">' + n + "</span>";
+      lab.querySelector("input").addEventListener("change", (e) => {
+        if (e.target.checked) quiz.units.add(u.id); else quiz.units.delete(u.id);
+        renderSetup();
+      });
+      checks.appendChild(lab);
+    });
+    $("q-lv").appendChild(lvChips(lvCounts, renderSetup));
+    $("q-extra").addEventListener("change", (e) => { setShowExtra(e.target.checked); renderSetup(); });
+    $("q-all").onclick = () => { UNITS.forEach((u) => quiz.units.add(u.id)); renderSetup(); };
+    $("q-none").onclick = () => { quiz.units.clear(); renderSetup(); };
+  }
   const start = $("q-start");
   start.disabled = total === 0;
-  if (quiz.units.size === 0) start.textContent = "請先勾選範圍";
+  if (!isWrite && quiz.units.size === 0) start.textContent = "請先勾選範圍";
   else if (total === 0) start.textContent = "沒有符合條件的題目";
   else if (total < quiz.count) start.textContent = "開始考試（共 " + total + " 題）";
   start.onclick = startQuiz;
 }
 
 function makeQuestions() {
+  if (quiz.type === "write") {
+    return shuffle(kanaPool()).slice(0, quiz.count).map((q) => ({ q: { ...q }, type: "write" }));
+  }
   const chosen = UNITS.filter((u) => quiz.units.has(u.id));
   const all = chosen.flatMap((u) => poolOf(u));
   return shuffle(all).slice(0, quiz.count).map((q) => {
@@ -1790,6 +1862,7 @@ function startQuiz() {
 }
 
 function renderQuestion() {
+  if (quiz.qs[quiz.i].type === "write") return renderWrite();
   const box = $("quiz");
   const { q, type, field, opts } = quiz.qs[quiz.i];
   const total = quiz.qs.length;
@@ -1868,15 +1941,17 @@ function showResult() {
   const pct = done ? Math.round(quiz.right.length / done * 100) : 0;
   // 只有單字、句子有熟練度
   const keyed = (arr) => arr.filter((x) => x.item).map((x) => keyOf(x.unit, x.item));
+  const isWrite = quiz.qs.length && quiz.qs[0].type === "write";
   const wrongUp = keyed(quiz.wrong).filter((k) => getLv(k) > 0);
   const rightUp = keyed(quiz.right).filter((k) => getLv(k) < 2);
   const box = $("quiz");
   box.innerHTML =
     '<div class="unit-head"><h2>成績</h2></div>' +
     '<section class="prompt"><div class="score">' + quiz.right.length + '<small> / ' + done + "</small></div>" +
-    '<div class="count">' + (done < total ? "（共 " + total + " 題，做了 " + done + " 題）" : "答對率 " + pct + "%") + "</div></section>" +
+    '<div class="count">' + (done < total ? "（共 " + total + " 題，做了 " + done + " 題）" : (isWrite ? "寫對率 " : "答對率 ") + pct + "%") + "</div></section>" +
     (wrongUp.length || rightUp.length ? '<section class="panel"><h3>更新熟練度</h3><div class="row" id="q-lvup"></div></section>' : "") +
-    (quiz.wrong.length ? '<h3 class="sub-h">答錯的題目</h3><p class="hint">點一行聽發音，按「詳細」看說明和例句。</p><div class="list" id="q-wrong"></div>' : "") +
+    (isWrite && done ? '<h3 class="sub-h">你寫的字</h3><p class="hint">左邊是你寫的，右邊是正確的字；點一下聽發音。</p><div id="q-review"></div>' : "") +
+    (!isWrite && quiz.wrong.length ? '<h3 class="sub-h">答錯的題目</h3><p class="hint">點一行聽發音，按「詳細」看說明和例句。</p><div class="list" id="q-wrong"></div>' : "") +
     '<div class="row"><button type="button" class="primary" id="q-again">再考一次</button>' +
     '<button type="button" class="ghost" id="q-setup">重新選範圍</button></div>';
   const addLvBtn = (keys, label, to) => {
@@ -1893,11 +1968,232 @@ function showResult() {
   };
   if (rightUp.length) addLvBtn(rightUp, "答對的 " + rightUp.length + " 個升一級", (v) => Math.min(2, v + 1));
   if (wrongUp.length) addLvBtn(wrongUp, "答錯的 " + wrongUp.length + " 個改回「不熟」", () => 0);
-  quiz.wrong.forEach((w) => {
+  if (isWrite && done) $("q-review").appendChild(writeReview());
+  if (!isWrite) quiz.wrong.forEach((w) => {
     $("q-wrong").appendChild(w.item ? itemRow(w.item, w.unit, false) : itemRow({ ja: w.ja, kanji: w.sub, zh: w.zh, say: w.say }, null, false));
   });
   $("q-again").onclick = () => { startQuiz(); window.scrollTo(0, 0); };
   $("q-setup").onclick = () => { renderSetup(); window.scrollTo(0, 0); };
+}
+
+// ---- 手寫五十音 ----
+const KANA_SECS = ["清音", "濁音・半濁音", "拗音"];
+const kanaUnit = () => UNITS.find((u) => u.grid === "kana");
+function kanaPool() {
+  const u = kanaUnit();
+  return u.sections.filter((s) => quiz.kanaSecs.has(s.label))
+    .flatMap((s) => s.cells.filter(Boolean).map((c) => ({ ja: c.big, zh: c.small, say: c.say, unit: u })));
+}
+const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const HAND_FONT = '"Klee One", "Zen Kaku Gothic New", "Hiragino Sans", sans-serif';
+
+// 寫字板：筆畫存成 0～1 的座標，換尺寸也能重畫
+function makePad(canvas) {
+  const pad = { strokes: [], overlay: null, locked: false, penSeen: false, onChange: null };
+  let cur = null, size = 0;
+  const ctx = canvas.getContext("2d");
+  function fit() {
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || Math.round(rect.width) === size) return;
+    size = Math.round(rect.width);
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+  function guides() {
+    ctx.save();
+    ctx.strokeStyle = cssVar("--line");
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.moveTo(size / 2, 0); ctx.lineTo(size / 2, size);
+    ctx.moveTo(0, size / 2); ctx.lineTo(size, size / 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+  function drawOverlay() {
+    if (!pad.overlay) return;
+    const n = Array.from(pad.overlay).length;
+    ctx.save();
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = cssVar("--ai");
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "600 " + Math.round(size * (n > 1 ? 0.5 : 0.78)) + "px " + HAND_FONT;
+    ctx.fillText(pad.overlay, size / 2, size / 2 + size * 0.03);
+    ctx.restore();
+  }
+  function strokeSeg(a, b) {
+    ctx.lineWidth = ((a.w + b.w) / 2) * size;
+    ctx.beginPath();
+    ctx.moveTo(a.x * size, a.y * size);
+    ctx.lineTo(b.x * size, b.y * size);
+    ctx.stroke();
+  }
+  function drawStroke(st) {
+    if (st.length === 1) {
+      ctx.beginPath();
+      ctx.arc(st[0].x * size, st[0].y * size, (st[0].w * size) / 2, 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    }
+    for (let i = 1; i < st.length; i++) strokeSeg(st[i - 1], st[i]);
+  }
+  function draw() {
+    ctx.clearRect(0, 0, size, size);
+    guides();
+    drawOverlay();
+    ctx.strokeStyle = ctx.fillStyle = cssVar("--ink");
+    ctx.lineCap = ctx.lineJoin = "round";
+    pad.strokes.forEach(drawStroke);
+  }
+  function point(e) {
+    const r = canvas.getBoundingClientRect();
+    // Apple Pencil 等觸控筆：依壓力改變粗細
+    const base = 0.034;
+    const w = e.pointerType === "pen" && e.pressure > 0 ? base * (0.55 + e.pressure * 0.9) : base;
+    return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height, w };
+  }
+  canvas.addEventListener("pointerdown", (e) => {
+    if (pad.locked) return;
+    if (e.pointerType === "pen") pad.penSeen = true;
+    else if (e.pointerType === "touch" && pad.penSeen) return; // 用筆的時候忽略手掌
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    cur = { id: e.pointerId, pts: [point(e)] };
+    pad.strokes.push(cur.pts);
+    ctx.strokeStyle = ctx.fillStyle = cssVar("--ink");
+    ctx.lineCap = ctx.lineJoin = "round";
+    drawStroke(cur.pts);
+    if (pad.onChange) pad.onChange();
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    if (!cur || e.pointerId !== cur.id) return;
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+    (evs.length ? evs : [e]).forEach((ev) => {
+      const p = point(ev);
+      const last = cur.pts[cur.pts.length - 1];
+      cur.pts.push(p);
+      strokeSeg(last, p);
+    });
+  });
+  const end = (e) => { if (cur && e.pointerId === cur.id) cur = null; };
+  canvas.addEventListener("pointerup", end);
+  canvas.addEventListener("pointercancel", end);
+  pad.undo = () => { if (pad.locked) return; pad.strokes.pop(); draw(); if (pad.onChange) pad.onChange(); };
+  pad.clear = () => { if (pad.locked) return; pad.strokes = []; draw(); if (pad.onChange) pad.onChange(); };
+  pad.reveal = (kana) => { pad.overlay = kana; pad.locked = true; draw(); };
+  pad.snapshot = () => {
+    // 存下自己寫的字（不含提示），給成績頁看
+    const keep = pad.overlay;
+    pad.overlay = null; draw();
+    const url = canvas.toDataURL("image/png");
+    pad.overlay = keep; draw();
+    return url;
+  };
+  pad.fit = fit;
+  fit();
+  return pad;
+}
+
+let activePad = null;
+window.addEventListener("resize", () => { if (activePad) activePad.fit(); });
+
+function renderWrite() {
+  const box = $("quiz");
+  const { q } = quiz.qs[quiz.i];
+  const total = quiz.qs.length;
+  box.innerHTML =
+    '<div class="unit-head"><h2>第 ' + (quiz.i + 1) + " / " + total + ' 題</h2><span class="count">寫對 ' + quiz.right.length + "</span></div>" +
+    '<div class="bar"><span style="width:' + (quiz.i / total * 100) + '%"></span></div>' +
+    '<section class="prompt w-prompt"><div class="ask">用平假名寫出這個音</div>' +
+      '<div class="q-roma">' + esc(q.zh) + "</div>" +
+      '<button type="button" class="pill" id="q-say">' + PLAY_ICON + "<span>聽發音</span></button></section>" +
+    '<div class="write-area">' +
+      '<div class="pad-wrap"><canvas id="pad" aria-label="手寫區：用手指或觸控筆寫出平假名"></canvas>' +
+        '<span class="pad-hint" id="pad-hint">在這裡寫</span></div>' +
+      '<div class="answer-box" id="w-answer" hidden><span class="eyebrow">正確答案</span>' +
+        '<span class="w-kana">' + esc(q.ja) + '</span><span class="count">' + esc(q.zh) + "</span></div>" +
+    "</div>" +
+    '<div class="w-tools" id="w-tools">' +
+      '<button type="button" class="ghost" id="w-undo">復原一筆</button>' +
+      '<button type="button" class="ghost" id="w-clear">清除</button>' +
+      '<button type="button" class="primary" id="w-check">對答案</button>' +
+    "</div>" +
+    '<div class="judge" id="w-judge" hidden></div>' +
+    '<button type="button" class="ghost" id="q-quit">結束考試</button>' +
+    (quiz.i === 0 ? '<p class="hint">寫完按「對答案」，跟正確的字比一比，再選自己有沒有寫對。有觸控筆（例如 Apple Pencil）會更好寫。</p>' : "");
+  const pad = activePad = makePad($("pad"));
+  // 先把手寫範本字體載好，對答案時才畫得出來
+  if (document.fonts && document.fonts.load) document.fonts.load("600 80px \"Klee One\"", q.ja).catch(() => {});
+  const hint = $("pad-hint");
+  const check = $("w-check");
+  pad.onChange = () => {
+    hint.hidden = pad.strokes.length > 0;
+    check.textContent = pad.strokes.length ? "對答案" : "不會寫，看答案";
+  };
+  pad.onChange();
+  $("q-say").onclick = (e) => speak(q.say, e.currentTarget);
+  $("w-undo").onclick = () => pad.undo();
+  $("w-clear").onclick = () => pad.clear();
+  $("q-quit").onclick = showResult;
+  check.onclick = () => {
+    const empty = pad.strokes.length === 0;
+    q._img = empty ? null : pad.snapshot();
+    pad.reveal(q.ja);
+    if (document.fonts && document.fonts.load) document.fonts.load("600 80px \"Klee One\"", q.ja).then(() => pad.reveal(q.ja)).catch(() => {});
+    hint.hidden = true;
+    $("w-answer").hidden = false;
+    $("w-tools").hidden = true;
+    speak(q.say, null);
+    const judge = $("w-judge");
+    judge.hidden = false;
+    const last = quiz.i === quiz.qs.length - 1;
+    const next = (right) => {
+      (right ? quiz.right : quiz.wrong).push(q);
+      activePad = null;
+      if (last) return showResult();
+      quiz.i++;
+      renderQuestion();
+      window.scrollTo(0, 0);
+    };
+    if (empty) {
+      judge.innerHTML = '<span class="fb-text">沒關係，記住正確的寫法。</span>' +
+        '<button type="button" class="primary" id="w-next">' + (last ? "看成績" : "下一題") + "</button>";
+      $("w-next").onclick = () => next(false);
+      $("w-next").focus({ preventScroll: true });
+    } else {
+      judge.innerHTML = '<span class="fb-text">跟正確答案比一比，你寫對了嗎？</span>' +
+        '<div class="judge-btns"><button type="button" class="ghost bad-btn" id="w-no">寫錯了</button>' +
+        '<button type="button" class="primary ok-btn" id="w-yes">寫對了</button></div>';
+      $("w-yes").onclick = () => next(true);
+      $("w-no").onclick = () => next(false);
+    }
+    judge.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  };
+}
+
+// 成績頁：把自己寫的字和正確答案排在一起
+function writeReview() {
+  const cards = quiz.wrong.map((q) => [q, false]).concat(quiz.right.map((q) => [q, true]));
+  if (!cards.length) return null;
+  const grid = document.createElement("div");
+  grid.className = "w-review";
+  cards.forEach(([q, ok]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "w-card " + (ok ? "ok" : "bad");
+    b.innerHTML =
+      '<span class="w-mine">' + (q._img ? '<img alt="我寫的「' + esc(q.ja) + '」" src="' + q._img + '">' : '<span class="count">沒有寫</span>') + "</span>" +
+      '<span class="w-right"><span class="w-kana">' + esc(q.ja) + '</span><span class="count">' + esc(q.zh) + "</span></span>" +
+      '<span class="w-badge">' + (ok ? "寫對" : "寫錯") + "</span>";
+    b.setAttribute("aria-label", "播放：" + q.ja);
+    b.addEventListener("click", () => speak(q.say, b));
+    grid.appendChild(b);
+  });
+  return grid;
 }
 
 // ---- 教學 ----
@@ -2117,6 +2413,8 @@ document.addEventListener("keydown", (e) => {
   if (tag === "input" || tag === "select") return;
   const opt = document.querySelector('.opt[data-n="' + e.key + '"]');
   if (opt && !opt.disabled) { e.preventDefault(); opt.click(); return; }
+  if (e.key === "Enter" && $("w-check") && !$("w-tools").hidden && tag !== "button") { e.preventDefault(); $("w-check").click(); return; }
+  if (e.key === "Enter" && $("w-next")) { e.preventDefault(); $("w-next").click(); return; }
   if (e.key === "Enter" && $("q-next")) { e.preventDefault(); $("q-next").click(); return; }
   if (e.key === " " && $("q-say") && tag !== "button") { e.preventDefault(); $("q-say").click(); }
 });
