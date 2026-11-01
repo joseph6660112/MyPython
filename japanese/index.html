@@ -132,6 +132,11 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 .cell .r { font-size: .8rem; color: var(--muted); letter-spacing: .04em; }
 .cell.playing .r { color: inherit; }
 .gap { aspect-ratio: 1 / 1; }
+.kana { display: grid; gap: 12px; }
+.kana h3 { margin: 10px 0 0; font-size: 1rem; color: var(--muted); font-weight: 700; }
+.kana h3:first-child { margin-top: 0; }
+.grid.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid.g3 .cell { aspect-ratio: auto; padding-block: 10px; }
 .nav { display: flex; justify-content: space-between; gap: 12px; }
 .nav button {
   font: inherit; font-size: .9rem; color: var(--ai); background: none; cursor: pointer;
@@ -180,14 +185,26 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 
 <script>
 // 寫法說明：{漢字|かな} 會變成上方小字標音；「補充」= 課本上的手寫筆記
-const KANA_ROWS = [
-  "あa いi うu えe おo", "かka きki くku けke こko", "さsa しshi すsu せse そso",
-  "たta ちchi つtsu てte とto", "なna にni ぬnu ねne のno", "はha ひhi ふfu へhe ほho",
-  "まma みmi むmu めme もmo", "やya - ゆyu - よyo", "らra りri るru れre ろro",
-  "わwa - - - をo", "んn - - - -",
+const KANA = [
+  { label: "清音", cols: 5, rows: [
+    "あa いi うu えe おo", "かka きki くku けke こko", "さsa しshi すsu せse そso",
+    "たta ちchi つtsu てte とto", "なna にni ぬnu ねne のno", "はha ひhi ふfu へhe ほho",
+    "まma みmi むmu めme もmo", "やya - ゆyu - よyo", "らra りri るru れre ろro",
+    "わwa - - - をo", "んn - - - -",
+  ] },
+  { label: "濁音・半濁音", cols: 5, rows: [
+    "がga ぎgi ぐgu げge ごgo", "ざza じji ずzu ぜze ぞzo", "だda ぢji づzu でde どdo",
+    "ばba びbi ぶbu べbe ぼbo", "ぱpa ぴpi ぷpu ぺpe ぽpo",
+  ] },
+  { label: "拗音", cols: 3, rows: [
+    "きゃkya きゅkyu きょkyo", "しゃsha しゅshu しょsho", "ちゃcha ちゅchu ちょcho",
+    "にゃnya にゅnyu にょnyo", "ひゃhya ひゅhyu ひょhyo", "みゃmya みゅmyu みょmyo",
+    "りゃrya りゅryu りょryo", "ぎゃgya ぎゅgyu ぎょgyo", "じゃja じゅju じょjo",
+    "びゃbya びゅbyu びょbyo", "ぴゃpya ぴゅpyu ぴょpyo",
+  ] },
 ];
 const UNITS = [
-  { id: "kana", title: "五十音（平假名）", grid: KANA_ROWS },
+  { id: "kana", title: "五十音（平假名・羅馬音）", grid: KANA },
   {
     id: "greet", title: "每日的招呼語",
     items: [
@@ -376,21 +393,31 @@ function render(id) {
   const list = $("list");
   list.innerHTML = "";
   if (unit.grid) {
-    list.className = "grid";
+    list.className = "kana";
     let n = 0;
-    unit.grid.forEach((row) => row.split(" ").forEach((c) => {
-      if (c === "-") { const g = document.createElement("span"); g.className = "gap"; list.appendChild(g); return; }
-      n++;
-      const kana = c[0], roma = c.slice(1);
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "cell";
-      b.innerHTML = '<span class="k">' + kana + '</span><span class="r">' + roma + "</span>";
-      b.setAttribute("aria-label", "播放：" + kana);
-      // 用片假名念單一個音，避免は、へ、を被當成助詞
-      b.addEventListener("click", () => speak(String.fromCharCode(kana.charCodeAt(0) + 0x60), b));
-      list.appendChild(b);
-    }));
+    unit.grid.forEach((sec) => {
+      const h = document.createElement("h3");
+      h.textContent = sec.label;
+      list.appendChild(h);
+      const g = document.createElement("div");
+      g.className = "grid" + (sec.cols === 3 ? " g3" : "");
+      sec.rows.forEach((row) => row.split(" ").forEach((c) => {
+        if (c === "-") { const e = document.createElement("span"); e.className = "gap"; g.appendChild(e); return; }
+        n++;
+        const m = c.match(/^([^\x00-\x7f]+)(.*)$/);
+        const kana = m[1], roma = m[2];
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "cell";
+        b.innerHTML = '<span class="k">' + kana + '</span><span class="r">' + roma + "</span>";
+        b.setAttribute("aria-label", "播放：" + kana + "（" + roma + "）");
+        // 用片假名念，避免は、へ、を被當成助詞
+        const kata = Array.from(kana).map((ch) => String.fromCharCode(ch.charCodeAt(0) + 0x60)).join("");
+        b.addEventListener("click", () => speak(kata, b));
+        g.appendChild(b);
+      }));
+      list.appendChild(g);
+    });
     $("unit-count").textContent = n + " 個";
   } else {
   list.className = "list";
