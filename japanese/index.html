@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!--HEAD-START-->
+<title>日文聽讀本</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
+<style>
+/* 版面：單欄講義，上方固定「單元選單」，每一行點一下就念出來 */
+:root {
+  --paper: #eef1f6;
+  --sheet: #ffffff;
+  --ink: #1b2232;
+  --muted: #5d6779;
+  --line: #dde2ec;
+  --ai: #2c4a8a;          /* 藍染色：主色 */
+  --ai-soft: #e3e9f6;
+  --pencil: #6f6a5f;      /* 鉛筆色：手寫補充 */
+  --pencil-soft: #efece4;
+  --font-ja: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+  --font-zh: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #10141c; --sheet: #181e2a; --ink: #e5e9f1; --muted: #9aa4b7; --line: #283043;
+    --ai: #94adea; --ai-soft: #222f4d; --pencil: #c2bba9; --pencil-soft: #2a2924;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #10141c; --sheet: #181e2a; --ink: #e5e9f1; --muted: #9aa4b7; --line: #283043;
+  --ai: #94adea; --ai-soft: #222f4d; --pencil: #c2bba9; --pencil-soft: #2a2924;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-zh);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--sheet);
+}
+.wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* 上方選單 */
+header {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 5;
+  background: var(--sheet);
+  border-bottom: 1px solid var(--line);
+}
+header .wrap { padding-block: 12px; display: grid; gap: 10px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+h1 { margin: 0; font-family: var(--font-ja); font-size: 1.15rem; font-weight: 700; letter-spacing: .04em; }
+h1 span { color: var(--ai); }
+.speed { display: flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px; flex-shrink: 0; }
+.speed button {
+  border: 0; background: none; color: var(--muted); font: inherit; font-size: .85rem;
+  padding: 4px 12px; border-radius: 999px; cursor: pointer;
+}
+.speed button[aria-pressed="true"] { background: var(--ai); color: var(--sheet); }
+select {
+  width: 100%; font: inherit; font-size: 1rem; color: var(--ink); background: var(--paper);
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+}
+
+/* 單元內容 */
+main .wrap { padding-block: 20px 40px; display: grid; gap: 14px; }
+.unit-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balance; }
+.count { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+.list { background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.item {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px;
+  width: 100%; text-align: left; font: inherit; color: inherit;
+  background: none; border: 0; border-top: 1px solid var(--line);
+  padding: 14px 16px; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.item:first-child { border-top: 0; }
+.item:hover { background: var(--paper); }
+.item:focus-visible { outline: 2px solid var(--ai); outline-offset: -2px; }
+.item.playing { background: var(--ai-soft); }
+.text { min-width: 0; display: grid; gap: 2px; }
+.ja { font-family: var(--font-ja); font-size: 1.3rem; line-height: 1.9; line-break: strict; }
+.ja.long { font-size: 1.1rem; }
+@media (min-width: 600px) { .ja.long { font-size: 1.25rem; } }
+.ja .line { display: block; }
+.ja rt { font-size: .5em; color: var(--muted); letter-spacing: .02em; }
+.kanji { font-family: var(--font-ja); color: var(--muted); font-size: .95rem; }
+.zh { color: var(--muted); font-size: .95rem; white-space: pre-line; }
+.tag {
+  display: inline-block; font-size: .72rem; letter-spacing: .06em; color: var(--pencil);
+  background: var(--pencil-soft); border-radius: 4px; padding: 0 6px; margin-left: 6px; vertical-align: 2px;
+}
+.note { color: var(--pencil); font-size: .82rem; }
+.play {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--ai-soft); color: var(--ai); flex-shrink: 0;
+}
+.play svg { width: 18px; height: 18px; fill: currentColor; }
+.item.playing .play { background: var(--ai); color: var(--sheet); }
+
+.nav { display: flex; justify-content: space-between; gap: 12px; }
+.nav button {
+  font: inherit; font-size: .9rem; color: var(--ai); background: none; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; min-width: 0;
+}
+.nav button:disabled { visibility: hidden; }
+.tip { color: var(--muted); font-size: .8rem; text-align: center; margin: 0; }
+.warn { background: var(--pencil-soft); color: var(--pencil); border-radius: 10px; padding: 10px 14px; font-size: .9rem; }
+@media (prefers-reduced-motion: no-preference) {
+  .item { transition: background .15s; }
+}
+</style>
+<!--HEAD-END-->
+</head>
+<body>
+<!--BODY-START-->
+<header>
+  <div class="wrap">
+    <div class="top">
+      <h1>日文<span>聽讀本</span></h1>
+      <div class="speed" role="group" aria-label="語速">
+        <button type="button" id="spd-normal" data-rate="0.9" aria-pressed="true">正常</button>
+        <button type="button" id="spd-slow" data-rate="0.6" aria-pressed="false">慢速</button>
+      </div>
+    </div>
+    <label for="unit" hidden>選擇單元</label>
+    <select id="unit"></select>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="warn" id="warn" hidden></p>
+    <div class="unit-head">
+      <h2 id="unit-title"></h2>
+      <span class="count" id="unit-count"></span>
+    </div>
+    <div class="list" id="list"></div>
+    <div class="nav">
+      <button type="button" id="prev">‹ 上一單元</button>
+      <button type="button" id="next">下一單元 ›</button>
+    </div>
+    <p class="tip">點任一行就會念出日文。沒有聲音的話，請確認手機沒有開靜音。</p>
+  </div>
+</main>
+
+<script>
+// 寫法說明：{漢字|かな} 會變成上方小字標音；「補充」= 課本上的手寫筆記
+const UNITS = [
+  {
+    id: "greet", title: "每日的招呼語",
+    items: [
+      { ja: "おはよう ございます。", zh: "早安。" },
+      { ja: "こんにちは。", zh: "午安／你好。", note: "最後的「は」念 wa" },
+      { ja: "こんばんは。", zh: "晚上好。（晚上見面時）", note: "最後的「は」念 wa" },
+      { ja: "お{休|やす}みなさい。", zh: "晚安。（睡前）" },
+      { ja: "さようなら。", zh: "再見。" },
+      { ja: "じゃあね。", zh: "掰啦、那先這樣囉。（朋友間）", extra: true },
+      { ja: "バイバイ。", zh: "掰掰。", extra: true },
+      { ja: "ありがとう ございます。", zh: "謝謝。" },
+      { ja: "すみません。", zh: "對不起／不好意思。" },
+      { ja: "ごめんなさい。", zh: "對不起。（道歉）", extra: true },
+      { ja: "お{願|ねが}いします。", zh: "拜託了／麻煩您了。" },
+      { ja: "ただいま。", zh: "我回來了。", extra: true },
+      { ja: "おかえりなさい。", zh: "歡迎回來。", extra: true },
+    ],
+  },
+  {
+    id: "numbers", title: "數字 0～10",
+    items: [
+      { ja: "ゼロ、れい", kanji: "0", zh: "零" },
+      { ja: "いち", kanji: "1・一", zh: "一" },
+      { ja: "に", kanji: "2・二", zh: "二" },
+      { ja: "さん", kanji: "3・三", zh: "三" },
+      { ja: "よん、し", kanji: "4・四", zh: "四" },
+      { ja: "ご", kanji: "5・五", zh: "五" },
+      { ja: "ろく", kanji: "6・六", zh: "六" },
+      { ja: "なな、しち", kanji: "7・七", zh: "七" },
+      { ja: "はち", kanji: "8・八", zh: "八" },
+      { ja: "きゅう、く", kanji: "9・九", zh: "九" },
+      { ja: "じゅう", kanji: "10・十", zh: "十" },
+    ],
+  },
+  {
+    id: "l1-words", title: "第1課　單語",
+    items: [
+      { ja: "わたし", kanji: "私", zh: "我" },
+      { ja: "わたしたち", kanji: "私たち", zh: "我們", extra: true },
+      { ja: "ぼく", kanji: "僕", zh: "我（男生用）", extra: true },
+      { ja: "あなた", zh: "你、您" },
+      { ja: "あのひと（あのかた）", kanji: "あの人（あの方）", zh: "他、她、那個人\n（「あのかた」是禮貌說法）", say: "あのひと。あのかた。" },
+      { ja: "～さん", zh: "～先生、～小姐、～女士\n（接在名字後面表示禮貌）", say: "さん" },
+      { ja: "～ちゃん", zh: "接在小孩子名字後面（代替「～さん」）", say: "ちゃん" },
+      { ja: "～じん", kanji: "～人", zh: "～人（表示國籍，例：アメリカじん 美國人）", say: "じん。アメリカじん。" },
+      { ja: "せんせい", kanji: "先生", zh: "老師（不用在自己的職業）" },
+      { ja: "きょうし", kanji: "教師", zh: "教師（說職業時用）" },
+      { ja: "がくせい", kanji: "学生", zh: "學生" },
+      { ja: "かいしゃいん", kanji: "会社員", zh: "公司職員" },
+      { ja: "しゃいん", kanji: "社員", zh: "公司職員（和公司名一起用，例：IMCの しゃいん）" },
+      { ja: "しゃちょう", kanji: "社長", zh: "社長、總經理", extra: true },
+      { ja: "ぎんこういん", kanji: "銀行員", zh: "銀行行員" },
+      { ja: "いしゃ", kanji: "医者", zh: "醫生" },
+      { ja: "かんごし", kanji: "看護師", zh: "護理師", extra: true },
+      { ja: "けんきゅうしゃ", kanji: "研究者", zh: "研究人員" },
+      { ja: "だいがく", kanji: "大学", zh: "大學" },
+      { ja: "びょういん", kanji: "病院", zh: "醫院" },
+      { ja: "だれ（どなた）", zh: "誰（哪位）\n（「どなた」是「だれ」的禮貌說法）", say: "だれ。どなた。" },
+      { ja: "～さい", kanji: "～歳", zh: "～歲", say: "さい" },
+      { ja: "なんさい（おいくつ）", kanji: "何歳", zh: "幾歲\n（「おいくつ」是禮貌說法）", say: "なんさい。おいくつ。" },
+      { ja: "はい", zh: "是、對" },
+      { ja: "いいえ", zh: "不、不是" },
+    ],
+  },
+  {
+    id: "l1-patterns", title: "第1課　文型",
+    items: [
+      { ja: "わたしは マイク・ミラーです。", zh: "我是麥克・米勒。", note: "「は」當助詞時念 wa" },
+      { ja: "サントスさんは {学生|がくせい}じゃ（では） ありません。", zh: "山多斯先生不是學生。", note: "じゃ ありません ＝ 不是", say: "サントスさんは学生じゃありません。" },
+      { ja: "ミラーさんは {会社員|かいしゃいん}ですか。", zh: "米勒先生是公司職員嗎？", note: "句尾加「か」＝ 疑問句" },
+      { ja: "サントスさんも {会社員|かいしゃいん}です。", zh: "山多斯先生也是公司職員。", note: "も ＝ 也" },
+    ],
+  },
+  {
+    id: "l1-examples", title: "第1課　例文",
+    items: [
+      { ja: "［あなたは］ マイク・ミラーさんですか。\n……はい、［わたしは］ マイク・ミラーです。",
+        zh: "你是麥克・米勒先生嗎？\n……是的，我是麥克・米勒。" },
+      { ja: "ミラーさんは {学生|がくせい}ですか。\n……いいえ、［わたしは］ {学生|がくせい}じゃ ありません。",
+        zh: "米勒先生是學生嗎？\n……不，我不是學生。" },
+      { ja: "ワンさんは {銀行員|ぎんこういん}ですか。\n……いいえ、［ワンさんは］ {銀行員|ぎんこういん}じゃ ありません。\n{医者|いしゃ}です。",
+        zh: "王先生是銀行行員嗎？\n……不，王先生不是銀行行員。\n是醫生。" },
+      { ja: "あの {方|かた}は どなたですか。\n……ワットさんです。 さくら{大学|だいがく}の {先生|せんせい}です。",
+        zh: "那位是誰？\n……是瓦特先生。是櫻花大學的老師。",
+        say: "あのかたは、どなたですか。ワットさんです。さくら大学の先生です。" },
+      { ja: "グプタさんは {会社員|かいしゃいん}ですか。\n……はい、{会社員|かいしゃいん}です。\nカリナさんも {会社員|かいしゃいん}ですか。\n……いいえ。［カリナさんは］ {学生|がくせい}です。",
+        zh: "古普塔先生是公司職員嗎？\n……是的，是公司職員。\n卡莉娜小姐也是公司職員嗎？\n……不是。卡莉娜小姐是學生。" },
+      { ja: "テレーザちゃんは {何歳|なんさい}ですか。\n……9{歳|さい}です。",
+        zh: "泰瑞莎小妹妹幾歲？\n……9歲。",
+        say: "テレーザちゃんは、なんさいですか。きゅうさいです。" },
+    ],
+  },
+  {
+    id: "l1-talk", title: "第1課　會話表現",
+    items: [
+      { ja: "はじめまして。", kanji: "初めまして。", zh: "初次見面。（自我介紹時最先講的話）" },
+      { ja: "～から きました。", kanji: "～から 来ました。", zh: "是從～來的。", say: "からきました。" },
+      { ja: "たいわんから きました。", kanji: "台湾から 来ました。", zh: "我是從台灣來的。", extra: true },
+      { ja: "［どうぞ］ よろしく ［おねがいします］。", kanji: "［どうぞ］ よろしく ［お願いします］。",
+        zh: "請多關照／請多指教。（自我介紹時最後講的話）", say: "どうぞよろしくおねがいします。" },
+      { ja: "しつれいですが", kanji: "失礼ですが", zh: "抱歉，請問……" },
+      { ja: "おなまえは？", kanji: "お名前は？", zh: "您貴姓？您叫什麼名字？", note: "「は」念 wa" },
+      { ja: "こちらは ～さんです。", zh: "這位是～。", note: "語音用「ミラーさん」示範", say: "こちらは、ミラーさんです。" },
+    ],
+  },
+];
+
+const $ = (id) => document.getElementById(id);
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+};
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// {漢字|かな} → <ruby>
+function toRuby(s) {
+  return esc(s).replace(/\{([^|}]+)\|([^}]+)\}/g, "<ruby>$1<rt>$2</rt></ruby>");
+}
+// 要念出來的文字：去掉標音、括號、～、空白
+function toSpeech(s) {
+  return s.replace(/\{([^|}]+)\|[^}]+\}/g, "$1")
+    .replace(/[［］\[\]～]/g, "")
+    .replace(/……/g, "")
+    .replace(/\n/g, "。")
+    .replace(/[ 　]/g, "")
+    .replace(/。。/g, "。");
+}
+
+// ---- 語音 ----
+const synth = window.speechSynthesis;
+let rate = parseFloat(store.get("rate")) || 0.9;
+let jaVoice = null;
+function pickVoice() {
+  if (!synth) return;
+  const voices = synth.getVoices().filter((v) => /^ja/i.test(v.lang));
+  const prefer = ["Kyoko", "O-ren", "Otoya", "Google", "Nanami", "Haruka"];
+  jaVoice = voices.find((v) => prefer.some((p) => v.name.includes(p))) || voices[0] || null;
+  if (synth.getVoices().length && !voices.length) {
+    showWarn("這台裝置找不到日文語音。請到系統設定 → 語言／文字轉語音，加入「日本語」語音。");
+  }
+}
+function showWarn(msg) { $("warn").textContent = msg; $("warn").hidden = false; }
+if (!synth) {
+  showWarn("這個瀏覽器不支援語音播放，請改用 Safari 或 Chrome。");
+} else {
+  pickVoice();
+  synth.onvoiceschanged = pickVoice;
+}
+
+let playingEl = null;
+function speak(text, el) {
+  if (!synth) return;
+  synth.cancel();
+  if (playingEl) playingEl.classList.remove("playing");
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "ja-JP";
+  if (jaVoice) u.voice = jaVoice;
+  u.rate = rate;
+  playingEl = el;
+  el.classList.add("playing");
+  const done = () => { el.classList.remove("playing"); if (playingEl === el) playingEl = null; };
+  u.onend = done;
+  u.onerror = done;
+  synth.speak(u);
+}
+
+// ---- 畫面 ----
+const PLAY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>';
+
+UNITS.forEach((u, i) => {
+  const o = document.createElement("option");
+  o.value = u.id;
+  o.textContent = (i + 1) + ". " + u.title;
+  $("unit").appendChild(o);
+});
+
+function render(id) {
+  let idx = UNITS.findIndex((u) => u.id === id);
+  if (idx < 0) idx = 0;
+  const unit = UNITS[idx];
+  if (synth) synth.cancel();
+  $("unit").value = unit.id;
+  $("unit-title").textContent = unit.title;
+  $("unit-count").textContent = unit.items.length + " 句";
+  const list = $("list");
+  list.innerHTML = "";
+  unit.items.forEach((it) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "item";
+    const lines = it.ja.split("\n").map((l) => '<span class="line">' + toRuby(l) + "</span>").join("");
+    b.innerHTML =
+      '<span class="text">' +
+        '<span class="ja' + (it.ja.includes("\n") ? " long" : "") + '">' + lines + (it.extra ? '<span class="tag">補充</span>' : "") + "</span>" +
+        (it.kanji ? '<span class="kanji">' + esc(it.kanji) + "</span>" : "") +
+        '<span class="zh">' + esc(it.zh) + "</span>" +
+        (it.note ? '<span class="note">' + esc(it.note) + "</span>" : "") +
+      "</span>" +
+      '<span class="play">' + PLAY_ICON + "</span>";
+    b.setAttribute("aria-label", "播放：" + toSpeech(it.ja));
+    b.addEventListener("click", () => speak(it.say || toSpeech(it.ja), b));
+    list.appendChild(b);
+  });
+  $("prev").disabled = idx === 0;
+  $("next").disabled = idx === UNITS.length - 1;
+  $("prev").onclick = () => go(UNITS[idx - 1].id);
+  $("next").onclick = () => go(UNITS[idx + 1].id);
+  store.set("unit", unit.id);
+}
+
+function go(id) {
+  if (location.hash.slice(1) === id) render(id);
+  else location.hash = id;
+  window.scrollTo(0, 0);
+}
+$("unit").addEventListener("change", (e) => go(e.target.value));
+window.addEventListener("hashchange", () => render(location.hash.slice(1)));
+
+// 語速
+function setRate(r) {
+  rate = r;
+  store.set("rate", String(r));
+  document.querySelectorAll(".speed button").forEach((b) => {
+    b.setAttribute("aria-pressed", String(parseFloat(b.dataset.rate) === r));
+  });
+}
+document.querySelectorAll(".speed button").forEach((b) => {
+  b.addEventListener("click", () => setRate(parseFloat(b.dataset.rate)));
+});
+setRate(rate);
+
+render(location.hash.slice(1) || store.get("unit") || UNITS[0].id);
+</script>
+<!--BODY-END-->
+</body>
+</html>
