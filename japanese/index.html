@@ -238,8 +238,27 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 .nav button:disabled { visibility: hidden; }
 .tip { color: var(--muted); font-size: .8rem; text-align: center; margin: 0; }
 .warn { background: var(--pencil-soft); color: var(--pencil); border-radius: 10px; padding: 10px 14px; font-size: .9rem; }
+/* 顯示模式：中日／只看中文／只看日文 */
+.modebar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.seg.small button { font-size: .88rem; padding: 6px 12px; }
+.ph { display: none; justify-self: start; color: var(--ai); font-size: .88rem; border: 1px dashed var(--ai); border-radius: 8px; padding: 4px 10px; }
+#list[data-mode="zh"] .item.masked .ja-part,
+#list[data-mode="ja"] .item.masked .zh-part { display: none; }
+#list[data-mode="zh"] .item.masked .ph-ja,
+#list[data-mode="ja"] .item.masked .ph-zh { display: block; }
+#list[data-mode="zh"] .cell.masked .ja-part,
+#list[data-mode="ja"] .cell.masked .zh-part { color: transparent; background: var(--line); border-radius: 6px; }
+#list[data-mode="zh"] .cell.masked .ja-part rt { color: transparent; }
+.cell .ja-part, .cell .zh-part { min-width: 2.4em; text-align: center; }
+button, label, select { touch-action: manipulation; }
+.hint { color: var(--muted); font-size: .85rem; margin: 0; }
+kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
 @media (prefers-reduced-motion: no-preference) {
-  .item { transition: background .15s; }
+  .item, .cell, .opt { transition: background .15s, border-color .15s, transform .1s; }
+  .item:active, .cell:active, .opt:not(:disabled):active { transform: scale(.985); }
+  .playing .play svg, .playing.big-play svg, .playing.mini-play svg { animation: pulse .7s ease-in-out infinite alternate; }
+  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.18); } }
+  .ja-part, .zh-part { transition: color .2s, background .2s; }
 }
 </style>
 <!--HEAD-END-->
@@ -274,6 +293,15 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
       <h2 id="unit-title"></h2>
       <span class="count" id="unit-count"></span>
     </div>
+    <div class="modebar">
+      <div class="seg small" id="mode" role="group" aria-label="顯示模式">
+        <button type="button" id="mode-both" data-mode="both">中日對照</button>
+        <button type="button" id="mode-zh" data-mode="zh">只看中文</button>
+        <button type="button" id="mode-ja" data-mode="ja">只看日文</button>
+      </div>
+      <button type="button" class="link" id="reveal-all" hidden>全部翻開</button>
+    </div>
+    <p class="hint" id="mode-hint" hidden></p>
     <div class="list" id="list"></div>
     <div class="nav">
       <button type="button" id="prev">‹ 上一單元</button>
@@ -413,8 +441,9 @@ const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) {
 function toRuby(s) {
   return esc(s).replace(/\{([^|}]+)\|([^}]+)\}/g, "<ruby>$1<rt>$2</rt></ruby>");
 }
-function jaHTML(s) {
-  return s.split("\n").map((l) => '<span class="line">' + toRuby(l) + "</span>").join("");
+function jaHTML(s, tail) {
+  const lines = s.split("\n");
+  return lines.map((l, i) => '<span class="line">' + toRuby(l) + (i === lines.length - 1 && tail ? tail : "") + "</span>").join("");
 }
 // 要念出來的文字：去掉標音、括號、～、空白
 function toSpeech(s) {
@@ -498,9 +527,10 @@ if (!synth) {
 }
 
 let playingEl = null;
-function speak(text, el) {
-  if (!synth) return;
+function speak(text, el, after) {
+  if (!synth) { if (after) after(); return; }
   synth.cancel();
+  synth.resume(); // Chrome 閒置久了會卡住，先叫醒
   if (playingEl) playingEl.classList.remove("playing");
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "ja-JP";
@@ -508,7 +538,14 @@ function speak(text, el) {
   u.rate = rate;
   playingEl = el || null;
   if (el) el.classList.add("playing");
-  const done = () => { if (el) el.classList.remove("playing"); if (playingEl === el) playingEl = null; };
+  let finished = false;
+  const done = () => {
+    if (finished) return;
+    finished = true;
+    if (el) el.classList.remove("playing");
+    if (playingEl === el) playingEl = null;
+    if (after) after();
+  };
   u.onend = done;
   u.onerror = done;
   synth.speak(u);
@@ -524,22 +561,62 @@ UNITS.forEach((u, i) => {
   $("unit").appendChild(o);
 });
 
-function itemButton(it) {
+let mode = ["both", "zh", "ja"].includes(store.get("mode")) ? store.get("mode") : "both";
+const MODE_HINT = {
+  zh: "先看中文想想日文怎麼說，點一下翻開日文並播放。",
+  ja: "先看日文想想是什麼意思，點一下翻開中文並播放。",
+};
+
+// 點一下：蓋住的先翻開，同時播放
+function tapCard(el, say) {
+  if (el.classList.contains("masked")) {
+    el.classList.remove("masked");
+    updateRevealAll();
+  }
+  speak(say, el);
+}
+
+function itemButton(it, maskable) {
   const b = document.createElement("button");
   b.type = "button";
-  b.className = "item";
+  b.className = "item" + (maskable ? " masked" : "");
   b.innerHTML =
     '<span class="text">' +
-      '<span class="ja' + (it.ja.includes("\n") ? " long" : "") + '">' + jaHTML(it.ja) + (it.extra ? '<span class="tag">補充</span>' : "") + "</span>" +
-      (it.kanji ? '<span class="kanji">' + esc(it.kanji) + "</span>" : "") +
-      '<span class="zh">' + esc(it.zh) + "</span>" +
-      (it.note ? '<span class="note">' + esc(it.note) + "</span>" : "") +
+      '<span class="ja ja-part' + (it.ja.includes("\n") ? " long" : "") + '">' + jaHTML(it.ja, it.extra ? '<span class="tag">補充</span>' : "") + "</span>" +
+      (it.kanji ? '<span class="kanji ja-part">' + esc(it.kanji) + "</span>" : "") +
+      '<span class="ph ph-ja">點一下看日文</span>' +
+      '<span class="zh zh-part">' + esc(it.zh) + "</span>" +
+      '<span class="ph ph-zh">點一下看中文</span>' +
+      (it.note ? '<span class="note ja-part">' + esc(it.note) + "</span>" : "") +
     "</span>" +
     '<span class="play">' + PLAY_ICON + "</span>";
   b.setAttribute("aria-label", "播放：" + toSpeech(it.ja));
-  b.addEventListener("click", () => speak(it.say || toSpeech(it.ja), b));
+  b.addEventListener("click", () => tapCard(b, it.say || toSpeech(it.ja)));
   return b;
 }
+
+function setMode(m) {
+  mode = m;
+  store.set("mode", m);
+  document.querySelectorAll("#mode button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === m)));
+  $("list").dataset.mode = m;
+  $("mode-hint").hidden = m === "both";
+  $("mode-hint").textContent = MODE_HINT[m] || "";
+  // 換模式時全部重新蓋上
+  document.querySelectorAll("#list .item, #list .cell").forEach((el) => el.classList.add("masked"));
+  updateRevealAll();
+}
+function updateRevealAll() {
+  const btn = $("reveal-all");
+  btn.hidden = mode === "both";
+  btn.textContent = document.querySelector("#list .masked") ? "全部翻開" : "全部蓋上";
+}
+document.querySelectorAll("#mode button").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
+$("reveal-all").addEventListener("click", () => {
+  const anyMasked = !!document.querySelector("#list .masked");
+  document.querySelectorAll("#list .item, #list .cell").forEach((el) => el.classList.toggle("masked", !anyMasked));
+  updateRevealAll();
+});
 
 function renderUnit(idx) {
   const unit = UNITS[idx];
@@ -562,9 +639,13 @@ function renderUnit(idx) {
         const b = document.createElement("button");
         b.type = "button";
         b.className = "cell";
-        b.innerHTML = '<span class="k">' + esc(c.big) + '</span><span class="r">' + esc(c.small) + "</span>";
+        b.classList.add("masked");
+        // 五十音：大字是日文；數字：大字是數字（當作中文那一面）
+        const bigPart = unit.grid === "numbers" ? "zh-part" : "ja-part";
+        const smallPart = unit.grid === "numbers" ? "ja-part" : "zh-part";
+        b.innerHTML = '<span class="k ' + bigPart + '">' + esc(c.big) + '</span><span class="r ' + smallPart + '">' + esc(c.small) + "</span>";
         b.setAttribute("aria-label", "播放：" + c.big + "（" + c.small + "）");
-        b.addEventListener("click", () => speak(c.say, b));
+        b.addEventListener("click", () => tapCard(b, c.say));
         g.appendChild(b);
       });
       list.appendChild(g);
@@ -573,13 +654,14 @@ function renderUnit(idx) {
   } else {
     list.className = "list";
     $("unit-count").textContent = unit.items.length + " 句";
-    unit.items.forEach((it) => list.appendChild(itemButton(it)));
+    unit.items.forEach((it) => list.appendChild(itemButton(it, true)));
   }
   $("prev").disabled = idx === 0;
   $("next").disabled = idx === UNITS.length - 1;
   $("prev").onclick = () => go(UNITS[idx - 1].id);
   $("next").onclick = () => go(UNITS[idx + 1].id);
   store.set("unit", unit.id);
+  setMode(mode);
 }
 
 // ---- 考試 ----
@@ -695,7 +777,8 @@ function renderQuestion() {
     '<section class="prompt"><div class="ask">' + esc(askOf(q.unit, type)) + "</div>" + prompt + "</section>" +
     '<div class="opts" id="q-opts"></div>' +
     '<div class="feedback" id="q-fb" hidden></div>' +
-    '<button type="button" class="ghost" id="q-quit">結束考試</button>';
+    '<button type="button" class="ghost" id="q-quit">結束考試</button>' +
+    (quiz.i === 0 ? '<p class="hint kb-hint">有鍵盤的話：按 <kbd>1</kbd>～<kbd>4</kbd> 作答，<kbd>Enter</kbd> 下一題，<kbd>空白鍵</kbd> 再聽一次。</p>' : "");
   if ($("q-say")) $("q-say").onclick = (e) => speak(q.say, e.currentTarget);
   const wrap = $("q-opts");
   opts.forEach((o) => {
@@ -703,6 +786,7 @@ function renderQuestion() {
     b.type = "button";
     b.className = "opt" + (field === "ja" ? " ja-opt" : "");
     b.innerHTML = field === "ja" ? jaHTML(o.ja) : esc(o.zh);
+    b.dataset.n = wrap.children.length + 1;
     b.addEventListener("click", () => answer(o, b));
     wrap.appendChild(b);
     o._btn = b;
@@ -718,23 +802,32 @@ function answer(o, btn) {
   if (ok) quiz.right++; else quiz.wrong.push(q);
   q._btn.classList.add("right");
   if (!ok) btn.classList.add("wrong");
-  speak(q.say, null);
   const last = quiz.i === quiz.qs.length - 1;
+  const token = quiz.token = {};
+  // 答對：念完正確答案後自動下一題；答錯：停下來讓你看清楚
+  speak(q.say, null, () => {
+    if (ok && quiz.token === token && !$("quiz").hidden && $("q-next")) setTimeout(() => {
+      if (quiz.token === token && $("q-next")) $("q-next").click();
+    }, 350);
+  });
   const fb = $("q-fb");
   fb.className = "feedback " + (ok ? "ok" : "bad");
-  fb.innerHTML = '<span class="fb-text">' + (ok ? "答對了！" : "答錯了，正確答案已標成綠色") + "</span>" +
+  fb.innerHTML = '<span class="fb-text">' + (ok ? "答對了！馬上下一題…" : "答錯了，正確答案已標成綠色") + "</span>" +
     '<button type="button" class="primary" id="q-next">' + (last ? "看成績" : "下一題") + "</button>";
   fb.hidden = false;
   $("q-next").onclick = () => {
+    quiz.token = null;
     if (last) return showResult();
     quiz.i++;
     renderQuestion();
     window.scrollTo(0, 0);
   };
   $("q-next").focus({ preventScroll: true });
+  fb.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 
 function showResult() {
+  quiz.token = null;
   if (synth) synth.cancel();
   const done = quiz.wrong.length + quiz.right;
   const total = quiz.qs.length;
@@ -748,7 +841,7 @@ function showResult() {
     '<div class="row"><button type="button" class="primary" id="q-again">再考一次</button>' +
     '<button type="button" class="ghost" id="q-setup">重新選範圍</button></div>';
   if (quiz.wrong.length) {
-    quiz.wrong.forEach((w) => $("q-wrong").appendChild(itemButton({ ja: w.ja, kanji: w.sub, zh: w.zh, say: w.say })));
+    quiz.wrong.forEach((w) => $("q-wrong").appendChild(itemButton({ ja: w.ja, kanji: w.sub, zh: w.zh, say: w.say }, false)));
   }
   $("q-again").onclick = () => { startQuiz(); window.scrollTo(0, 0); };
   $("q-setup").onclick = () => { renderSetup(); window.scrollTo(0, 0); };
@@ -757,6 +850,7 @@ function showResult() {
 // ---- 切換畫面 ----
 function render(hash) {
   if (synth) synth.cancel();
+  quiz.token = null;
   const isQuiz = hash === "quiz";
   $("learn").hidden = isQuiz;
   $("quiz").hidden = !isQuiz;
@@ -777,6 +871,15 @@ $("unit").addEventListener("change", (e) => go(e.target.value));
 $("tab-learn").addEventListener("click", () => go(store.get("unit") || UNITS[0].id));
 $("tab-quiz").addEventListener("click", () => go("quiz"));
 window.addEventListener("hashchange", () => render(location.hash.slice(1)));
+document.addEventListener("keydown", (e) => {
+  if ($("quiz").hidden || e.metaKey || e.ctrlKey || e.altKey) return;
+  const tag = (e.target.tagName || "").toLowerCase();
+  if (tag === "input" || tag === "select") return;
+  const opt = document.querySelector('.opt[data-n="' + e.key + '"]');
+  if (opt && !opt.disabled) { e.preventDefault(); opt.click(); return; }
+  if (e.key === "Enter" && $("q-next")) { e.preventDefault(); $("q-next").click(); return; }
+  if (e.key === " " && $("q-say") && tag !== "button") { e.preventDefault(); $("q-say").click(); }
+});
 
 // 語速
 function setRate(r) {
