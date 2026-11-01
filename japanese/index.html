@@ -67,6 +67,7 @@ body::before {
 
 /* 上方選單 */
 header {
+  box-shadow: 0 1px 0 var(--line), 0 6px 16px -12px rgba(20, 30, 60, .25);
   position: sticky;
   top: env(safe-area-inset-top, 0px);
   z-index: 5;
@@ -75,8 +76,25 @@ header {
 }
 header .wrap { padding-block: 12px; display: grid; gap: 10px; }
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-h1 { margin: 0; font-family: var(--font-ja); font-size: 1.15rem; font-weight: 700; letter-spacing: .04em; }
-h1 span { color: var(--ai); }
+h1 { margin: 0; display: flex; align-items: center; gap: 8px; font-family: var(--font-ja); font-size: 1.15rem; font-weight: 700; letter-spacing: .04em; }
+h1 .accent { color: var(--ai); margin-left: -8px; }
+.seal {
+  display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 9px;
+  background: var(--ai); color: var(--sheet); font-size: 1rem; letter-spacing: 0;
+}
+.top-tools { display: flex; align-items: center; gap: 8px; }
+.icon-btn {
+  width: 34px; height: 34px; display: grid; place-items: center; cursor: pointer;
+  background: none; color: var(--muted); border: 1px solid var(--line); border-radius: 50%;
+}
+.icon-btn svg { width: 18px; height: 18px; fill: currentColor; }
+.icon-btn[aria-expanded="true"] { color: var(--ai); border-color: var(--ai); background: var(--ai-soft); }
+.settings { display: grid; gap: 8px; padding-top: 4px; border-top: 1px dashed var(--line); }
+.set-label { font-size: .9rem; font-weight: 700; padding-top: 8px; }
+.set-row { display: flex; gap: 8px; }
+.set-row select { flex: 1; min-width: 0; }
+.small-btn { padding: 8px 16px; font-size: .9rem; }
+.settings .hint { line-height: 1.7; }
 .speed { display: flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px; flex-shrink: 0; }
 .speed button {
   border: 0; background: none; color: var(--muted); font: inherit; font-size: .85rem;
@@ -100,7 +118,8 @@ select {
 
 /* 單元內容 */
 main .wrap { padding-block: 20px 40px; display: grid; gap: 14px; }
-.unit-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.unit-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.unit-head .pill { flex-shrink: 0; }
 h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balance; }
 .count { color: var(--muted); font-size: .85rem; white-space: nowrap; }
 .list { background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
@@ -231,12 +250,25 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 .fb-text { font-weight: 700; }
 .score { font-size: 3.2rem; font-weight: 700; color: var(--ai); font-variant-numeric: tabular-nums; line-height: 1.1; }
 .score small { font-size: 1.4rem; color: var(--muted); font-weight: 400; }
-.nav { display: flex; justify-content: space-between; gap: 12px; }
+.nav { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px; }
 .nav button {
-  font: inherit; font-size: .9rem; color: var(--ai); background: none; cursor: pointer;
-  border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; min-width: 0;
+  display: grid; gap: 2px; font: inherit; color: var(--ink); cursor: pointer; text-align: left;
+  background: var(--sheet); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; min-width: 0;
 }
+.nav button small { color: var(--ai); font-size: .8rem; }
+.nav button span { font-family: var(--font-ja); font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav #next { text-align: right; grid-column: 2; }
+.nav button:hover { border-color: var(--ai); }
 .nav button:disabled { visibility: hidden; }
+.title-block { display: grid; gap: 2px; min-width: 0; }
+.eyebrow { font-size: .75rem; letter-spacing: .12em; color: var(--ai); font-weight: 700; }
+.tools { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: .88rem; cursor: pointer;
+  color: var(--ai); background: var(--ai-soft); border: 0; border-radius: 999px; padding: 7px 14px 7px 10px;
+}
+.pill svg { width: 16px; height: 16px; fill: currentColor; }
+.pill[aria-pressed="true"] { background: var(--ai); color: var(--sheet); }
 .tip { color: var(--muted); font-size: .8rem; text-align: center; margin: 0; }
 .warn { background: var(--pencil-soft); color: var(--pencil); border-radius: 10px; padding: 10px 14px; font-size: .9rem; }
 /* 顯示模式：中日／只看中文／只看日文 */
@@ -286,10 +318,15 @@ kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radi
 <header>
   <div class="wrap">
     <div class="top">
-      <h1>日文<span>聽讀本</span></h1>
-      <div class="speed" role="group" aria-label="語速">
-        <button type="button" id="spd-normal" data-rate="0.9" aria-pressed="true">正常</button>
-        <button type="button" id="spd-slow" data-rate="0.6" aria-pressed="false">慢速</button>
+      <h1><span class="seal" aria-hidden="true">あ</span>日文<span class="accent">聽讀本</span></h1>
+      <div class="top-tools">
+        <div class="speed" role="group" aria-label="語速">
+          <button type="button" id="spd-normal" data-rate="0.9" aria-pressed="true">正常</button>
+          <button type="button" id="spd-slow" data-rate="0.6" aria-pressed="false">慢速</button>
+        </div>
+        <button type="button" class="icon-btn" id="settings-btn" aria-expanded="false" aria-controls="settings" aria-label="語音設定">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.3 7.3 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.3 7.3 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.3 7.3 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.3 7.3 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>
+        </button>
       </div>
     </div>
     <div class="bar-row">
@@ -300,6 +337,16 @@ kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radi
       <label for="unit" hidden>選擇單元</label>
       <select id="unit"></select>
     </div>
+    <section class="settings" id="settings" hidden>
+      <label for="voice" class="set-label">日文語音</label>
+      <div class="set-row">
+        <select id="voice"></select>
+        <button type="button" class="ghost small-btn" id="voice-test">試聽</button>
+      </div>
+      <p class="hint">發音聽起來怪怪的，可以換一個語音試試。<br>
+        iPhone／iPad：設定 → 輔助使用 → 朗讀內容 → 聲音 → 日文，下載「加強版」或「高品質」語音，重新打開網頁就會自然很多。<br>
+        Android：安裝「Google 文字轉語音」並下載日文語音。</p>
+    </section>
   </div>
 </header>
 
@@ -308,8 +355,12 @@ kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radi
     <p class="warn" id="warn" hidden></p>
     <div class="view" id="learn">
     <div class="unit-head">
-      <h2 id="unit-title"></h2>
-      <span class="count" id="unit-count"></span>
+      <div class="title-block">
+        <span class="eyebrow" id="unit-eyebrow"></span>
+        <h2 id="unit-title"></h2>
+      </div>
+      <span class="count" id="unit-count" hidden></span>
+      <button type="button" class="pill" id="play-all" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14l11-7z"/></svg><span>全部播放</span></button>
     </div>
     <div class="modebar">
       <div class="seg small" id="mode" role="group" aria-label="顯示模式">
@@ -317,14 +368,16 @@ kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radi
         <button type="button" id="mode-zh" data-mode="zh">只看中文</button>
         <button type="button" id="mode-ja" data-mode="ja">只看日文</button>
       </div>
-      <button type="button" class="link" id="reveal-all" hidden>全部翻開</button>
+      <div class="tools">
+        <button type="button" class="link" id="reveal-all" hidden>全部翻開</button>
+      </div>
     </div>
     <p class="hint" id="mode-hint" hidden></p>
     <p class="hint legend" id="cho-legend"><span class="eg">せん<span class="cho">せ<b>い</b></span></span><span>畫底線的是長音，藍字代表前一個音拉長一拍</span></p>
     <div class="list" id="list"></div>
     <div class="nav">
-      <button type="button" id="prev">‹ 上一單元</button>
-      <button type="button" id="next">下一單元 ›</button>
+      <button type="button" id="prev"><small>‹ 上一單元</small><span id="prev-name"></span></button>
+      <button type="button" id="next"><small>下一單元 ›</small><span id="next-name"></span></button>
     </div>
     <p class="tip">點任一行就會念出日文。沒有聲音的話，請確認手機沒有開靜音。</p>
     </div>
@@ -378,7 +431,7 @@ const UNITS = [
   {
     id: "l1-words", title: "第1課　單語",
     items: [
-      { ja: "わたし", kanji: "私", zh: "我" },
+      { ja: "わたし", kanji: "私", zh: "我", say: "わたし" },
       { ja: "わたしたち", kanji: "私たち", zh: "我們", extra: true },
       { ja: "ぼく", kanji: "僕", zh: "我（男生用）", extra: true },
       { ja: "あなた", zh: "你、您" },
@@ -556,28 +609,65 @@ function poolOf(u) {
     if (u.grid === "numbers") return cells.map((c) => ({ ja: c.small, zh: c.big, say: c.say }));
     return cells.map((c) => ({ ja: c.big, zh: c.small, say: c.say }));
   }
-  return u.items.map((it) => ({ ja: it.ja, sub: it.kanji, zh: it.zh, say: it.say || toSpeech(it.ja) }));
+  return u.items.map((it) => ({ ja: it.ja, sub: it.kanji, zh: it.zh, say: sayOf(it) }));
 }
 const ASK = {
   kana: { ja2zh: "這個怎麼念？選出羅馬音", zh2ja: "選出對應的平假名" },
   numbers: { ja2zh: "選出對應的數字", zh2ja: "選出正確的日文念法" },
   default: { ja2zh: "選出中文意思", zh2ja: "選出對應的日文" },
 };
+// 有漢字的單字用漢字給語音念，比純假名準（例：ぎんこういん → 銀行員）
+const sayOf = (it) => it.say || toSpeech(it.kanji || it.ja);
 const askOf = (u, type) => type === "listen" ? "聽聽看，是哪一個？" : (ASK[u.grid] || ASK.default)[type];
 
 // ---- 語音 ----
 const synth = window.speechSynthesis;
 let rate = parseFloat(store.get("rate")) || 0.9;
 let jaVoice = null;
+// 自動挑最自然的日文語音：加強版／高品質 > 常見好聽的 > 其他
+function voiceScore(v) {
+  let n = 0;
+  if (/premium|enhanced|高品質|加強|プレミアム|拡張|siri/i.test(v.name)) n += 4;
+  if (/kyoko|o-ren|otoya|google|nanami|haruka|keita/i.test(v.name)) n += 2;
+  if (v.localService) n += 1;
+  return n;
+}
 function pickVoice() {
   if (!synth) return;
-  const voices = synth.getVoices().filter((v) => /^ja/i.test(v.lang));
-  const prefer = ["Kyoko", "O-ren", "Otoya", "Google", "Nanami", "Haruka"];
-  jaVoice = voices.find((v) => prefer.some((p) => v.name.includes(p))) || voices[0] || null;
+  const voices = synth.getVoices().filter((v) => /^ja/i.test(v.lang))
+    .sort((a, b) => voiceScore(b) - voiceScore(a));
+  const saved = store.get("voice");
+  jaVoice = voices.find((v) => v.name === saved) || voices[0] || null;
+  const sel = $("voice");
+  sel.innerHTML = "";
+  if (!voices.length) {
+    sel.innerHTML = "<option>（找不到日文語音）</option>";
+    sel.disabled = true;
+  } else {
+    sel.disabled = false;
+    voices.forEach((v, i) => {
+      const o = document.createElement("option");
+      o.value = v.name;
+      o.textContent = v.name.replace(/\s*\(.*?\)\s*$/, "") + (i === 0 ? "（推薦）" : "") + (v.localService ? "" : "・需網路");
+      if (jaVoice && v.name === jaVoice.name) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
   if (synth.getVoices().length && !voices.length) {
     showWarn("這台裝置找不到日文語音。請到系統設定 → 語言／文字轉語音，加入「日本語」語音。");
   }
 }
+$("voice").addEventListener("change", (e) => {
+  store.set("voice", e.target.value);
+  pickVoice();
+  speak("銀行員。おはようございます。", $("voice-test"));
+});
+$("voice-test").addEventListener("click", (e) => speak("銀行員。おはようございます。", e.currentTarget));
+$("settings-btn").addEventListener("click", (e) => {
+  const open = $("settings").hidden;
+  $("settings").hidden = !open;
+  e.currentTarget.setAttribute("aria-expanded", String(open));
+});
 function showWarn(msg) { $("warn").textContent = msg; $("warn").hidden = false; }
 if (!synth) {
   showWarn("這個瀏覽器不支援語音播放，請改用 Safari 或 Chrome。");
@@ -629,6 +719,7 @@ const MODE_HINT = {
 
 // 點一下：蓋住的先翻開，同時播放
 function tapCard(el, say) {
+  stopAll();
   if (el.classList.contains("masked")) {
     el.classList.remove("masked");
     updateRevealAll();
@@ -651,9 +742,42 @@ function itemButton(it, maskable) {
     "</span>" +
     '<span class="play">' + PLAY_ICON + "</span>";
   b.setAttribute("aria-label", "播放：" + toSpeech(it.ja));
-  b.addEventListener("click", () => tapCard(b, it.say || toSpeech(it.ja)));
+  b._say = sayOf(it);
+  b.addEventListener("click", () => tapCard(b, b._say));
   return b;
 }
+
+// 全部播放：一個接一個念，畫面跟著捲動
+let autoplay = null;
+function updatePlayAll() {
+  const b = $("play-all");
+  b.setAttribute("aria-pressed", String(!!autoplay));
+  b.querySelector("span").textContent = autoplay ? "停止播放" : "全部播放";
+  b.querySelector("svg").innerHTML = autoplay ? '<path d="M7 7h10v10H7z"/>' : '<path d="M7 5v14l11-7z"/>';
+}
+function stopAll() {
+  if (!autoplay) return;
+  autoplay = null;
+  if (synth) synth.cancel();
+  updatePlayAll();
+}
+function playAll() {
+  if (autoplay) { stopAll(); return; }
+  const els = Array.from(document.querySelectorAll("#list .item, #list .cell"));
+  const token = autoplay = {};
+  updatePlayAll();
+  let i = 0;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const step = () => {
+    if (autoplay !== token) return;
+    if (i >= els.length) { stopAll(); return; }
+    const el = els[i++];
+    el.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+    speak(el._say, el, () => { if (autoplay === token) setTimeout(step, 450); });
+  };
+  step();
+}
+$("play-all").addEventListener("click", playAll);
 
 function setMode(m) {
   mode = m;
@@ -705,6 +829,7 @@ function renderUnit(idx) {
         const smallPart = unit.grid === "numbers" ? "ja-part" : "zh-part";
         b.innerHTML = '<span class="k ' + bigPart + '">' + esc(c.big) + '</span><span class="r ' + smallPart + '">' + (unit.grid === "numbers" ? markLong(esc(c.small)) : esc(c.small)) + "</span>";
         b.setAttribute("aria-label", "播放：" + c.big + "（" + c.small + "）");
+        b._say = c.say;
         b.addEventListener("click", () => tapCard(b, c.say));
         g.appendChild(b);
       });
@@ -716,8 +841,11 @@ function renderUnit(idx) {
     $("unit-count").textContent = unit.items.length + " 句";
     unit.items.forEach((it) => list.appendChild(itemButton(it, true)));
   }
+  $("unit-eyebrow").textContent = "單元 " + (idx + 1) + " / " + UNITS.length + "・" + $("unit-count").textContent;
   $("prev").disabled = idx === 0;
   $("next").disabled = idx === UNITS.length - 1;
+  $("prev-name").textContent = idx > 0 ? UNITS[idx - 1].title : "";
+  $("next-name").textContent = idx < UNITS.length - 1 ? UNITS[idx + 1].title : "";
   $("prev").onclick = () => go(UNITS[idx - 1].id);
   $("next").onclick = () => go(UNITS[idx + 1].id);
   store.set("unit", unit.id);
@@ -910,6 +1038,7 @@ function showResult() {
 
 // ---- 切換畫面 ----
 function render(hash) {
+  stopAll();
   if (synth) synth.cancel();
   quiz.token = null;
   const isQuiz = hash === "quiz";
