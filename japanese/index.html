@@ -126,7 +126,9 @@ select {
 /* 單元內容 */
 main .wrap { padding-block: 20px 40px; display: grid; gap: 14px; }
 .unit-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.unit-head .pill { flex-shrink: 0; }
+.unit-head .play-ctl { display: flex; gap: 6px; flex-shrink: 0; }
+.play-ctl #play-all span { font-variant-numeric: tabular-nums; }
+.stop-pill { background: var(--sheet); color: var(--muted); border: 1px solid var(--line); padding-right: 12px; }
 h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balance; }
 .count { color: var(--muted); font-size: .85rem; white-space: nowrap; }
 .list { background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
@@ -610,7 +612,10 @@ kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radi
         <h2 id="unit-title"></h2>
       </div>
       <span class="count" id="unit-count" hidden></span>
-      <button type="button" class="pill" id="play-all" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14l11-7z"/></svg><span>全部播放</span></button>
+      <div class="play-ctl">
+        <button type="button" class="pill" id="play-all" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14l11-7z"/></svg><span>全部播放</span></button>
+        <button type="button" class="pill stop-pill" id="stop-all" aria-label="停止全部播放" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10H7z"/></svg><span>停止</span></button>
+      </div>
     </div>
     <div class="modebar">
       <div class="seg small" id="mode" role="group" aria-label="顯示模式">
@@ -1316,9 +1321,11 @@ if (!synth) {
 }
 
 let playingEl = null;
+let speechSeq = 0; // 每念一句加一；被新的一句蓋掉的，就不再執行它的後續動作
 function speak(text, el, after, rateOverride) {
   if (!synth) { if (after) after(); return; }
-  synth.cancel();
+  // 只有真的在念的時候才取消：Safari 在 cancel() 後馬上 speak() 有時會整句被吃掉
+  if (synth.speaking || synth.pending) synth.cancel();
   synth.resume(); // Chrome 閒置久了會卡住，先叫醒
   if (playingEl) playingEl.classList.remove("playing");
   const u = new SpeechSynthesisUtterance(text);
@@ -1328,16 +1335,31 @@ function speak(text, el, after, rateOverride) {
   playingEl = el || null;
   if (el) el.classList.add("playing");
   let finished = false;
+  const seq = ++speechSeq;
+  // 有些手機念完不會通知（onend 沒觸發），連續播放就會卡住。所以：
+  // 1. 每 0.25 秒看一下語音是不是已經停了；2. 最後還有一個時間上限
+  let sawSpeaking = false;
+  const poll = setInterval(() => {
+    if (seq !== speechSeq) return done();
+    if (synth.speaking) sawSpeaking = true;
+    else if (sawSpeaking && !synth.pending) done();
+  }, 250);
+  const watchdog = setTimeout(() => done(), Array.from(text).length * 300 / u.rate + 2500);
   const done = () => {
     if (finished) return;
     finished = true;
+    clearInterval(poll);
+    clearTimeout(watchdog);
     if (el) el.classList.remove("playing");
     if (playingEl === el) playingEl = null;
-    if (after) after();
+    if (after && seq === speechSeq) after();
   };
+  u.onstart = () => { sawSpeaking = true; };
   u.onend = done;
   u.onerror = done;
   synth.speak(u);
+  // 很短的音（例如單一個假名）可能在第一次檢查前就念完了，所以送出時就先算「開始了」
+  if (synth.speaking || synth.pending) sawSpeaking = true;
 }
 
 // ---- 學習畫面 ----
@@ -1718,37 +1740,57 @@ $("d-next").addEventListener("click", () => navDetail(1));
   }, { passive: true });
 })();
 
-// ---- 全部播放：一個接一個念，畫面跟著捲動 ----
-let autoplay = null;
+// ---- 全部播放：一個接一個念，畫面跟著捲動；可以暫停、繼續、停止 ----
+let autoplay = null; // { els, i, paused, timer }
+const ICON_PLAY = '<path d="M7 5v14l11-7z"/>';
+const ICON_PAUSE = '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>';
 function updatePlayAll() {
   const b = $("play-all");
-  b.setAttribute("aria-pressed", String(!!autoplay));
-  b.querySelector("span").textContent = autoplay ? "停止播放" : "全部播放";
-  b.querySelector("svg").innerHTML = autoplay ? '<path d="M7 7h10v10H7z"/>' : '<path d="M7 5v14l11-7z"/>';
+  const st = !autoplay ? "idle" : autoplay.paused ? "paused" : "playing";
+  const pos = autoplay ? " " + Math.min(autoplay.i + 1, autoplay.els.length) + "/" + autoplay.els.length : "";
+  b.setAttribute("aria-pressed", String(st === "playing"));
+  b.querySelector("span").textContent = (st === "playing" ? "暫停" : st === "paused" ? "繼續" : "全部播放") + pos;
+  b.querySelector("svg").innerHTML = st === "playing" ? ICON_PAUSE : ICON_PLAY;
+  $("stop-all").hidden = st === "idle";
 }
 function stopAll() {
   if (!autoplay) return;
+  clearTimeout(autoplay.timer);
   autoplay = null;
   if (synth) synth.cancel();
   updatePlayAll();
 }
-function playAll() {
-  if (autoplay) { stopAll(); return; }
-  const els = Array.from(document.querySelectorAll("#list .item, #list .cell")).filter((el) => el.offsetParent !== null);
-  if (!els.length) return;
-  const token = autoplay = {};
+function playStep(ap) {
+  if (autoplay !== ap || ap.paused) return;
+  if (ap.i >= ap.els.length) { stopAll(); return; }
+  const el = ap.els[ap.i];
   updatePlayAll();
-  let i = 0;
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const step = () => {
-    if (autoplay !== token) return;
-    if (i >= els.length) { stopAll(); return; }
-    const el = els[i++];
-    el.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
-    speak(el._say, el, () => { if (autoplay === token) setTimeout(step, 450); });
-  };
-  step();
+  el.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+  speak(el._say, el, () => {
+    // 暫停時不往下走，按「繼續」會從這一句重新念
+    if (autoplay !== ap || ap.paused) return;
+    ap.i++;
+    ap.timer = setTimeout(() => playStep(ap), 450);
+  });
 }
+function playAll() {
+  if (!autoplay) {
+    const els = Array.from(document.querySelectorAll("#list .item, #list .cell")).filter((el) => el.offsetParent !== null);
+    if (!els.length) return;
+    autoplay = { els, i: 0, paused: false, timer: null };
+    playStep(autoplay);
+  } else if (autoplay.paused) {
+    autoplay.paused = false;
+    playStep(autoplay);
+  } else {
+    autoplay.paused = true;
+    clearTimeout(autoplay.timer);
+    if (synth) synth.cancel();
+    updatePlayAll();
+  }
+}
+$("stop-all").addEventListener("click", stopAll);
 $("play-all").addEventListener("click", playAll);
 
 function setShowExtra(on) {
