@@ -443,6 +443,12 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 .gq-why.bad { background: var(--bad-soft); color: var(--bad); }
 
 /* 熟練度篩選 */
+.sync { order: 9; flex-basis: 100%; display: flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--muted); }
+.sync:empty { display: none; }
+.sync::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--line); flex-shrink: 0; }
+.sync[data-state="saved"]::before { background: var(--ok); }
+.sync[data-state="saving"]::before, .sync[data-state="loading"]::before { background: var(--ai); }
+.sync[data-state="offline"]::before { background: var(--lv1); }
 .lvbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .lvbar-label { font-size: .85rem; color: var(--muted); }
 .lv-filter { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -589,6 +595,7 @@ kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radi
       <p class="hint">發音聽起來怪怪的，可以換一個語音試試。<br>
         iPhone／iPad：設定 → 輔助使用 → 朗讀內容 → 聲音 → 日文，下載「加強版」或「高品質」語音，重新打開網頁就會自然很多。<br>
         Android：安裝「Google 文字轉語音」並下載日文語音。</p>
+      <p class="hint">在 claude.ai 裡打開時，熟練度會存到你的帳號，換裝置或重新登入都還在，而且只有你自己看得到。</p>
     </section>
   </div>
 </header>
@@ -620,7 +627,7 @@ kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radi
         </label>
       </div>
     </div>
-    <div class="lvbar" id="lvbar" hidden><span class="lvbar-label">熟練度</span></div>
+    <div class="lvbar" id="lvbar" hidden><span class="lvbar-label">熟練度</span><span class="sync" id="sync-status" role="status"></span></div>
     <p class="hint" id="mode-hint" hidden></p>
     <p class="hint legend" id="cho-legend"><span class="eg">せん<span class="cho">せ<b>い</b></span></span><span>畫底線的是長音，藍字代表前一個音拉長一拍</span></p>
     <div class="list" id="list"></div>
@@ -1375,7 +1382,7 @@ const visibleItems = (u) => u.items.filter((it) => passExtra(it) && lvShow.has(g
 
 function setLv(key, v) {
   if (v === 0) delete prof[key]; else prof[key] = v;
-  store.set("prof", JSON.stringify(prof));
+  profChanged();
   document.querySelectorAll(".item[data-key]").forEach((row) => { if (row.dataset.key === key) paintLv(row); });
   if (!$("detail").hidden && detail.rows[detail.i] && detail.rows[detail.i].dataset.key === key) paintDetailLv();
   updateLvFilter();
@@ -1396,7 +1403,7 @@ function toggleLvShow(n, rerender) {
     if (lvShow.size === 1) { toast("至少要選一種熟練度"); return; }
     lvShow.delete(n);
   } else lvShow.add(n);
-  store.set("lvShow", Array.from(lvShow).sort().join(""));
+  profChanged();
   rerender();
 }
 function lvChips(counts, rerender) {
@@ -1422,6 +1429,124 @@ function updateLvFilter() {
   const old = bar.querySelector(".lv-filter");
   const fresh = lvChips(counts, () => render(location.hash.slice(1)));
   if (old) old.replaceWith(fresh); else bar.appendChild(fresh);
+}
+
+// ---- 熟練度存到帳號 ----
+// 在 claude.ai 裡打開時，熟練度存在你帳號的私人資料區（data/users/<你的 id>/progress），
+// 換裝置、重新登入都還在；其他地方打開（例如直接開檔案）就只存在這台裝置的瀏覽器。
+const sync = { ref: null, timer: null, inflight: 0, chain: Promise.resolve() };
+const SYNC_TEXT = {
+  loading: "正在讀取你的熟練度…",
+  saving: "儲存中…",
+  saved: "熟練度已存到你的帳號",
+  local: "熟練度只存在這台裝置",
+  offline: "暫時連不上，熟練度先存在這台裝置",
+};
+function setSyncState(st) {
+  const el = $("sync-status");
+  el.textContent = SYNC_TEXT[st];
+  el.dataset.state = st;
+}
+function saveLocal() {
+  store.set("prof", JSON.stringify(prof));
+  store.set("lvShow", Array.from(lvShow).sort().join(""));
+}
+function readRemote(data) {
+  const p = {};
+  (Array.isArray(data.levels) ? data.levels : []).forEach((pair) => {
+    if (Array.isArray(pair) && typeof pair[0] === "string" && (pair[1] === 1 || pair[1] === 2)) p[pair[0]] = pair[1];
+  });
+  const show = new Set(String(data.show || "012").split("").map(Number).filter((n) => n >= 0 && n <= 2));
+  return { prof: p, show: show.size ? show : new Set([0, 1, 2]) };
+}
+const sameProf = (a, b) => {
+  const ka = Object.keys(a), kb = Object.keys(b);
+  return ka.length === kb.length && ka.every((k) => a[k] === b[k]);
+};
+const sameShow = (a, b) => a.size === b.size && Array.from(a).every((n) => b.has(n));
+
+// 每次變更：先存在這台裝置，再合併成一次寫到帳號（同一份文件一次只寫一個）
+function profChanged() {
+  saveLocal();
+  if (!sync.ref) return;
+  clearTimeout(sync.timer);
+  setSyncState("saving");
+  sync.timer = setTimeout(() => {
+    sync.timer = null;
+    const body = { levels: Object.entries(prof), show: Array.from(lvShow).sort().join(""), updatedAt: Date.now() };
+    sync.inflight++;
+    sync.chain = sync.chain
+      .then(() => writeOnce(body))
+      .then(() => { if (!sync.timer) setSyncState("saved"); })
+      .catch((e) => {
+        if (e && e.code === "invalid_argument") { sync.ref = null; setSyncState("local"); }
+        else setSyncState("offline");
+      })
+      .finally(() => { sync.inflight--; });
+  }, 600);
+}
+async function writeOnce(body) {
+  try {
+    await sync.ref.set(body);
+  } catch (e) {
+    if (!e || e.code !== "unavailable") throw e;
+    // 暫時性問題：稍等一下再試一次
+    await new Promise((r) => setTimeout(r, 800 + Math.random() * 1200));
+    await sync.ref.set(body);
+  }
+}
+// 熟練度從帳號載入或被其他裝置改了之後，更新畫面
+function refreshProfViews(initial) {
+  document.querySelectorAll(".item[data-key]").forEach(paintLv);
+  if (!$("detail").hidden) { paintDetailLv(); updateLvFilter(); return; }
+  if (initial && !$("learn").hidden && currentUnit && currentUnit.items) { render(location.hash.slice(1)); return; }
+  if (!$("quiz").hidden && $("q-start")) { renderSetup(); return; }
+  updateLvFilter();
+}
+const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej({ code: "timeout" }), ms))]);
+
+async function startSync() {
+  const c = window.claude;
+  if (!c || typeof c.use !== "function") { setSyncState("local"); return; }
+  setSyncState("loading");
+  const [db, user] = await Promise.all([c.use("db"), c.use("user")]);
+  const uid = user ? await user.id() : null;
+  if (!db || !uid) { setSyncState("local"); return; }
+  const ref = db.doc("data/users/" + uid + "/progress");
+  let snap = null;
+  for (let attempt = 0; attempt < 2 && !snap; attempt++) {
+    try { snap = await withTimeout(ref.get(), 10000); }
+    catch (e) {
+      if (e && (e.code === "not_granted" || e.code === "revoked" || e.code === "capability_disabled")) { setSyncState("local"); return; }
+      setSyncState("offline");
+      await new Promise((r) => setTimeout(r, 4000));
+    }
+  }
+  if (!snap) { setSyncState("offline"); return; }
+  sync.ref = ref;
+  if (snap.exists) {
+    // 帳號裡已經有資料：以帳號為準
+    const r = readRemote(snap.data());
+    const changed = !sameProf(prof, r.prof) || !sameShow(lvShow, r.show);
+    prof = r.prof; lvShow = r.show;
+    saveLocal();
+    setSyncState("saved");
+    if (changed) refreshProfViews(true);
+  } else if (Object.keys(prof).length || lvShow.size < 3) {
+    // 第一次：把這台裝置原本存的上傳到帳號
+    profChanged();
+  } else {
+    setSyncState("saved");
+  }
+  // 其他裝置改了熟練度時同步過來（自己還沒存完的變更優先）
+  ref.onSnapshot((s) => {
+    if (!s.exists || s.metadata.hasPendingWrites || sync.timer || sync.inflight) return;
+    const r = readRemote(s.data());
+    if (sameProf(prof, r.prof) && sameShow(lvShow, r.show)) return;
+    prof = r.prof; lvShow = r.show;
+    saveLocal();
+    refreshProfViews(false);
+  }, () => { if (sync.ref) setSyncState("offline"); });
 }
 
 // ---- 一行單字／句子 ----
@@ -2433,6 +2558,7 @@ document.querySelectorAll(".speed button").forEach((b) => {
 setRate(rate);
 
 render(location.hash.slice(1));
+startSync();
 </script>
 <!--BODY-END-->
 </body>
