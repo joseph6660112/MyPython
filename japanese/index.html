@@ -368,6 +368,75 @@ h2 { margin: 0; font-family: var(--font-ja); font-size: 1.4rem; text-wrap: balan
 .w-card.ok .w-badge { background: var(--ok-soft); color: var(--ok); }
 .w-card.bad .w-badge { background: var(--bad-soft); color: var(--bad); }
 
+/* 英文口語報告 */
+.g-group { margin: 14px 0 0; font-size: .95rem; color: var(--muted); }
+.en-card .g-num { background: var(--lv2-soft); color: var(--lv2); font-size: .85rem; }
+.en-sub { font-family: var(--font-zh); }
+.en-plan summary { cursor: pointer; font-weight: 700; }
+.en-plan ol { margin: 8px 0 0; padding-left: 1.4em; line-height: 1.9; }
+.en-tabs { margin-top: 2px; }
+.en-script { display: grid; gap: 10px; }
+.en-slide { display: flex; align-items: center; gap: 10px; margin-top: 8px; color: var(--muted); font-size: .9rem; }
+.en-slide-n {
+  font-weight: 700; font-size: .8rem; letter-spacing: .06em; color: var(--sheet); background: var(--ai);
+  border-radius: 6px; padding: 2px 8px; white-space: nowrap;
+}
+.en-lines { background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.en-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px; border-top: 1px solid var(--line); padding-right: 12px; }
+.en-row:first-child { border-top: 0; }
+.en-row.playing { background: var(--ai-soft); }
+.en-row.your-turn { background: var(--lv1-soft); }
+.en-row.your-turn .en-main::after {
+  content: "換你念！"; justify-self: start; font-size: .78rem; font-weight: 700;
+  color: var(--lv1); border: 1px solid var(--lv1); border-radius: 999px; padding: 1px 10px;
+}
+.en-main {
+  display: grid; gap: 4px; min-width: 0; width: 100%; text-align: left; cursor: pointer;
+  font: inherit; color: inherit; background: none; border: 0; padding: 14px 4px 14px 16px;
+  -webkit-tap-highlight-color: transparent;
+}
+.en-text { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 1.15rem; line-height: 1.65; overflow-wrap: break-word; }
+.en-st { color: var(--ai); font-weight: 700; }
+.en-link { color: var(--muted); font-weight: 400; margin-inline: -1px; }
+.en-name { font-family: var(--font-zh); border-bottom: 1.5px dotted var(--pencil); }
+.en-zh { color: var(--muted); font-size: .92rem; }
+.en-tip { font-size: .85rem; color: var(--ink); background: var(--paper); border-radius: 8px; padding: 6px 10px; line-height: 1.7; }
+.en-tip b { color: var(--pencil); font-size: .75rem; letter-spacing: .06em; margin-right: 6px; }
+.en-fix { font-size: .78rem; color: var(--lv0); }
+.en-cue { display: none; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 1.15rem; color: var(--ai); }
+.en-row.cue .en-text, .en-row.cue .en-fix { display: none; }
+.en-row.cue .en-cue { display: block; }
+.en-btns { display: grid; gap: 6px; justify-items: center; }
+.slow-btn {
+  width: 40px; height: 28px; border-radius: 999px; cursor: pointer; font: inherit; font-size: .78rem; font-weight: 700;
+  color: var(--ai); background: var(--sheet); border: 1px solid var(--line);
+}
+.en-words { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.en-word {
+  display: grid; gap: 2px; justify-items: start; text-align: left; cursor: pointer; font: inherit; color: inherit;
+  background: var(--sheet); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px;
+}
+.en-word.playing { background: var(--ai-soft); border-color: var(--ai); }
+.en-w { font-size: 1.15rem; font-weight: 700; font-family: ui-sans-serif, system-ui, sans-serif; }
+.en-s { font-size: .9rem; letter-spacing: .02em; color: var(--muted); }
+.en-s b { color: var(--ai); }
+.en-kk { font-size: .9rem; font-family: "Lucida Sans Unicode", "Arial Unicode MS", "Noto Sans", "Segoe UI", sans-serif; }
+.en-wzh { font-size: .8rem; color: var(--muted); }
+.en-stage { gap: 12px; }
+.en-ctl { display: flex; flex-wrap: wrap; gap: 8px; }
+.en-ctl .pill span { font-variant-numeric: tabular-nums; }
+.en-timer { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; border-top: 1px dashed var(--line); padding-top: 12px; }
+.en-time { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ai); min-width: 3.2em; }
+.en-time[data-state="near"] { color: var(--lv1); }
+.en-time[data-state="over"] { color: var(--bad); }
+.en-checklist { margin: 0; padding-left: 1.3em; line-height: 1.9; }
+.en-fixcard { gap: 8px; }
+.en-from, .en-to { display: flex; gap: 8px; align-items: baseline; font-family: ui-sans-serif, system-ui, sans-serif; }
+.en-from { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--bad); }
+.tag-bad, .tag-ok { flex-shrink: 0; font-family: var(--font-zh); font-size: .72rem; font-weight: 700; border-radius: 4px; padding: 1px 6px; text-decoration: none; display: inline-block; }
+.tag-bad { color: var(--bad); background: var(--bad-soft); }
+.tag-ok { color: var(--ok); background: var(--ok-soft); }
+
 /* 教學 */
 .guide-list { display: grid; gap: 10px; }
 .guide-card {
@@ -597,6 +666,7 @@ kbd { font: inherit; font-size: .8em; border: 1px solid var(--line); border-radi
       <p class="hint">發音聽起來怪怪的，可以換一個語音試試。<br>
         iPhone／iPad：設定 → 輔助使用 → 朗讀內容 → 聲音 → 日文，下載「加強版」或「高品質」語音，重新打開網頁就會自然很多。<br>
         Android：安裝「Google 文字轉語音」並下載日文語音。</p>
+      <p class="hint">英文報告會自動用手機內建的英文語音（組員名字用中文語音）。</p>
       <p class="hint">在 claude.ai 裡打開時，熟練度會存到你的帳號，換裝置或重新登入都還在，而且只有你自己看得到。</p>
     </section>
   </div>
@@ -1267,7 +1337,7 @@ const askOf = (u, type) => type === "listen" ? "聽聽看，是哪一個？" : (
 // ---- 語音 ----
 const synth = window.speechSynthesis;
 let rate = parseFloat(store.get("rate")) || 0.9;
-let jaVoice = null;
+let jaVoice = null, enVoice = null, zhVoice = null;
 // 自動挑最自然的日文語音：加強版／高品質 > 常見好聽的 > 其他
 function voiceScore(v) {
   let n = 0;
@@ -1276,8 +1346,22 @@ function voiceScore(v) {
   if (v.localService) n += 1;
   return n;
 }
+// 英文挑美式、自然的；中文挑台灣的
+function pickOther() {
+  const all = synth.getVoices();
+  const score = (v, good) => voiceScore(v) + (good.test(v.name) ? 3 : 0);
+  const en = all.filter((v) => /^en[-_]US/i.test(v.lang));
+  const enAny = en.length ? en : all.filter((v) => /^en/i.test(v.lang));
+  const enGood = /samantha|ava|aria|jenny|google us english|alex|allison|zoe/i;
+  enVoice = enAny.sort((a, b) => score(b, enGood) - score(a, enGood))[0] || null;
+  const tw = all.filter((v) => /^zh[-_](TW|Hant)/i.test(v.lang));
+  const zhAny = tw.length ? tw : all.filter((v) => /^zh/i.test(v.lang));
+  const zhGood = /mei-?jia|國語|臺灣|台灣|hanhan|yating/i;
+  zhVoice = zhAny.sort((a, b) => score(b, zhGood) - score(a, zhGood))[0] || null;
+}
 function pickVoice() {
   if (!synth) return;
+  pickOther();
   const voices = synth.getVoices().filter((v) => /^ja/i.test(v.lang))
     .sort((a, b) => voiceScore(b) - voiceScore(a));
   const saved = store.get("voice");
@@ -1322,15 +1406,17 @@ if (!synth) {
 
 let playingEl = null;
 let speechSeq = 0; // 每念一句加一；被新的一句蓋掉的，就不再執行它的後續動作
-function speak(text, el, after, rateOverride) {
+function speak(text, el, after, rateOverride, lang) {
   if (!synth) { if (after) after(); return; }
   // 只有真的在念的時候才取消：Safari 在 cancel() 後馬上 speak() 有時會整句被吃掉
   if (synth.speaking || synth.pending) synth.cancel();
   synth.resume(); // Chrome 閒置久了會卡住，先叫醒
   if (playingEl) playingEl.classList.remove("playing");
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = "ja-JP";
-  if (jaVoice) u.voice = jaVoice;
+  // 預設日文；英文報告用英文，組員名字用中文
+  u.lang = lang === "en" ? "en-US" : lang === "zh" ? "zh-TW" : "ja-JP";
+  const voice = lang === "en" ? enVoice : lang === "zh" ? zhVoice : jaVoice;
+  if (voice) u.voice = voice;
   u.rate = rateOverride || rate;
   playingEl = el || null;
   if (el) el.classList.add("playing");
@@ -2491,11 +2577,13 @@ function renderGuideQuiz(box, items) {
 function renderGuide(id) {
   const box = $("guide");
   box.innerHTML = "";
+  if (id === "en-shu") { renderEnglish(); return; }
   const idx = GUIDES.findIndex((g) => g.id === id);
   if (idx < 0) {
     // 目錄
     box.innerHTML =
-      '<div class="unit-head"><div class="title-block"><span class="eyebrow">教學・' + GUIDES.length + ' 課</span><h2>文法教學</h2></div></div>' +
+      '<div class="unit-head"><div class="title-block"><span class="eyebrow">教學</span><h2>教學</h2></div></div>' +
+      '<h3 class="g-group">日文文法・' + GUIDES.length + ' 課</h3>' +
       '<p class="hint">從長音開始，一課一課看下去。每課最後都有小練習。</p>';
     const list = document.createElement("div");
     list.className = "guide-list";
@@ -2509,6 +2597,22 @@ function renderGuide(id) {
       list.appendChild(b);
     });
     box.appendChild(list);
+    // 英文口語報告
+    const enHead = document.createElement("h3");
+    enHead.className = "g-group";
+    enHead.textContent = "英文口語報告";
+    box.appendChild(enHead);
+    const enList = document.createElement("div");
+    enList.className = "guide-list";
+    const eb = document.createElement("button");
+    eb.type = "button";
+    eb.className = "guide-card en-card";
+    eb.innerHTML = '<span class="g-num">EN</span><span class="g-txt"><b>Zero Waste Shu（我的部分）</b>' +
+      "<small>Speaker 1・Slide 1–5・逐句跟讀、重點單字、發音技巧、上台演練</small></span>" +
+      '<span class="chev">' + CHEVRON + "</span>";
+    eb.addEventListener("click", () => go("guide-en-shu"));
+    enList.appendChild(eb);
+    box.appendChild(enList);
     return;
   }
   const g = GUIDES[idx];
@@ -2535,10 +2639,496 @@ function renderGuide(id) {
   if (next) { nb.querySelector("span").textContent = next.title; nb.onclick = () => go("guide-" + next.id); }
 }
 
+// ---- 英文口語報告：Zero Waste Shu（Speaker 1：李名宥）----
+// 寫法：**字** = 要加重的字；‿ = 連音；{zh:名字} = 用中文念的名字；fix = 跟原稿不同、修正過的句子
+const EN_SHU = {
+  title: "Zero Waste Shu",
+  part: "Part 1 — Meet Shu",
+  speaker: "Speaker 1：李名宥",
+  next: "曾新",
+  slides: [
+    { n: 1, zh: "開場、介紹組員和主題", lines: [
+      { en: "Good **morning**, **everyone**.", zh: "大家早安。",
+        tip: "everyone 重音在前：EV-ery-one。morning 的 r 要捲舌。" },
+      { en: "We are **Group 8**.", zh: "我們是第八組。",
+        tip: "Group 念 [grup]，結尾的 p 嘴巴閉起來就好，不要多念出「ㄆㄨ」。8 念 eight [et]。" },
+      { en: "I'm {zh:李名宥}, and these are my **teammates**, {zh:曾新}, {zh:林佑錡} and {zh:胡哲瑋}.", zh: "我是李名宥，這幾位是我的組員：曾新、林佑錡和胡哲瑋。",
+        tip: "名字用中文正常念，每個名字之間停一下，可以用手比向組員。these 的 th 要咬舌。teammates 結尾的 ts 要念出來。" },
+      { en: "Today, we want to **introduce** our **ideal** **influencer**: Zero Waste Shu.", zh: "今天我們要介紹我們的理想網紅：零廢阿樹。",
+        tip: "三個重音：in-tro-DUCE（在最後）、i-DEAL（在中間）、IN-flu-en-cer（在最前面）。冒號停一下，再清楚地說 Zero Waste Shu。" },
+      { en: "Shu is‿an **eco** influencer.", zh: "阿樹是一位環保網紅。",
+        tip: "is an 連在一起念成 i-zan。eco 念 [ˋiko]，像「伊扣」。" },
+      { en: "She says being **honest** is better than being **perfect**.", zh: "她說：誠實比完美更重要。",
+        tip: "honest 的 h 不發音，念 [ˋɑnɪst]。better 的 tt 在美式發音很輕，像 bedder。這句是重點，放慢、語氣肯定。",
+        fix: "原稿：She says honest is better than perfect" },
+    ] },
+    { n: 2, zh: "報告大綱", lines: [
+      { en: "Our talk has **four** parts.", zh: "我們的報告有四個部分。",
+        tip: "talk 的 l 不發音，念 [tɔk]。parts 結尾的 ts 要念出來。" },
+      { en: "**First**, I will tell you who Shu is and why we made Shu.", zh: "首先，我會介紹阿樹是誰，以及我們為什麼設計她。",
+        tip: "First 的 st 要清楚，念完停一下。who [hu] 和 why [hwaɪ] 開頭不一樣。" },
+      { en: "**Then**, {zh:曾新} will tell you what Shu **believes** and **shares**.", zh: "接著，曾新會說阿樹相信和分享什麼。",
+        tip: "Then 的 th 是有聲的咬舌音 [ð]。believes、shares 結尾的 s 都念成 z。" },
+      { en: "After that, {zh:林佑錡} will tell you about‿a big **mistake** Shu made.", zh: "然後，林佑錡會講阿樹犯下的一個大錯。",
+        tip: "that 也是咬舌音。about a 連音：a-bou-ta。mistake 重音在後：mis-TAKE。" },
+      { en: "**Last**, {zh:胡哲瑋} will show you how Shu wins back **trust**.", zh: "最後，胡哲瑋會說阿樹怎麼重新贏回信任。",
+        tip: "trust 的 tr 嘴巴先嘟起來，結尾 st 念清楚。wins 的 s 念 z。" },
+    ] },
+    { n: 3, zh: "阿樹是誰", lines: [
+      { en: "So, **who** is Shu?", zh: "那阿樹是誰呢？",
+        tip: "Who 開頭的問句，句尾語調往下 ↘。So 後面停一下，製造好奇感。" },
+      { en: "Shu is‿a **twenty-three-year-old** **college** student, just like‿us.", zh: "阿樹是一位 23 歲的大學生，跟我們一樣。",
+        tip: "twenty-three-year-old 是一個形容詞，year 不加 s。three 的 th 咬舌。college 念 [ˋkɑlɪdʒ]。like us 連音：li-kus。" },
+      { en: "Shu rides‿a bike to school, wears **second-hand** **clothes**, and always carries‿a **reusable** cup.", zh: "她騎腳踏車上學、穿二手衣，而且總是帶著環保杯。",
+        tip: "clothes 念 [kloz]，跟 close 一樣，不要念成 clo-thes。reusable 重音在第二音節：re-USE-a-ble。句子長，在逗號處換氣。" },
+      { en: "Shu posts‿on three **platforms**.", zh: "阿樹在三個平台發文。",
+        tip: "posts 的 sts 慢慢念：pos-ts。platforms 重音在前：PLAT-forms。" },
+      { en: "On YouTube, Shu makes fun **experiments**, like living one week without **plastic**.", zh: "在 YouTube，她做有趣的實驗，例如一週不用塑膠。",
+        tip: "experiments 重音在第二音節：ex-PER-i-ments。plastic 重音在前：PLAS-tic。" },
+      { en: "On **Instagram**, Shu shares‿easy **green tips** in pictures.", zh: "在 Instagram，她用圖片分享簡單的環保小技巧。",
+        tip: "Instagram 重音在前：IN-sta-gram。shares easy 連音：sha-reasy。" },
+      { en: "And on TikTok, Shu makes short **one-minute** videos.", zh: "在 TikTok，她拍一分鐘的短影片。",
+        tip: "videos 的 v 要上齒輕碰下唇，不要念成 w。one-minute 要連在一起念。" },
+      { en: "Her videos are **short** and **easy**.", zh: "她的影片又短又簡單。",
+        tip: "short and easy 念得輕快一點。" },
+      { en: "You can do‿it **too**!", zh: "你也做得到！",
+        tip: "這句是對觀眾說的，看著台下、有精神地說。do it 連音：doo-it。" },
+    ] },
+    { n: 4, zh: "阿樹的三個個性", lines: [
+      { en: "Shu has three **personality** traits.", zh: "阿樹有三個個性特質。",
+        tip: "personality 重音在第三音節：per-son-AL-i-ty。traits 結尾 ts 要念出來。" },
+      { en: "**First**, she is **cheerful**.", zh: "第一，她很開朗。",
+        tip: "cheerful 的 ch 嘴巴嘟起來：CHEER-ful。" },
+      { en: "When‿a **challenge** fails, she just **laughs**.", zh: "挑戰失敗的時候，她就笑一笑。",
+        tip: "laughs 的 gh 念 f：[læfs]。challenge 重音在前：CHAL-lenge。",
+        fix: "原稿：she just laugh（she 後面的動詞要加 s）" },
+      { en: "**Second**, she is **honest**.", zh: "第二，她很誠實。",
+        tip: "honest 的 h 不發音。" },
+      { en: "She is **not** perfect.", zh: "她不完美。",
+        tip: "not 加重語氣。" },
+      { en: "She still buys **bubble tea** in‿a plastic cup, and she **says**‿it.", zh: "她還是會買塑膠杯裝的手搖飲，而且會說出來。",
+        tip: "says 念 [sɛz]，不是 [sez]。says it 連音：se-zit。" },
+      { en: "**Third**, she is **curious**.", zh: "第三，她很好奇。",
+        tip: "Third 開頭是咬舌 [θ]，不要念成 sird 或 fird。curious 重音在前：CU-ri-ous。" },
+      { en: "She always asks, “Is this good for the **earth**? Let’s **check**.”", zh: "她總是問：「這對地球好嗎？我們來查查看。」",
+        tip: "引號裡是阿樹的話，可以換一點語氣。Is this good…? 是 Yes/No 問句，句尾往上 ↗。earth 念 [ɝθ]：先捲舌再咬舌。" },
+    ] },
+    { n: 5, zh: "我們為什麼設計阿樹", lines: [
+      { en: "**Why** did we make Shu?", zh: "我們為什麼設計阿樹？",
+        tip: "Why 開頭的問句，句尾往下 ↘。" },
+      { en: "Because many young people love the **earth**, but they think living green is too **expensive**, too **hard**, or only for **perfect** people.", zh: "因為很多年輕人愛地球，卻覺得環保生活太貴、太難，或只屬於完美的人。",
+        tip: "整段最長的一句，分三段換氣：Because… earth, ／ but… too hard, ／ or only for perfect people。expensive 重音在中間：ex-PEN-sive。" },
+      { en: "So we want Shu to make green living **easy**, **cheap** and **fun**.", zh: "所以我們希望阿樹讓環保生活變得簡單、便宜又有趣。",
+        tip: "easy、cheap、fun 三個字加重，中間稍微停一下。cheap [tʃip] 是長音，不要念成 chip。" },
+      { en: "Shu is like‿a **friend**, not a **teacher**.", zh: "阿樹像朋友，不像老師。",
+        tip: "like a 連音：li-ka。friend 和 teacher 是對比，兩個都加重。" },
+      { en: "And the **first step** can be **free** — like saying **no** to‿a plastic bag.", zh: "而且第一步可以是免費的，例如拒絕一個塑膠袋。",
+        tip: "破折號停一下。first step 兩個 st 要清楚。free 的 f 上齒輕碰下唇。" },
+    ] },
+    { n: "交棒", zh: "交給下一位", lines: [
+      { en: "That’s who Shu is.", zh: "這就是阿樹。",
+        tip: "That’s 是咬舌 [ð]。句尾往下，表示這段結束。" },
+      { en: "Now, {zh:曾新} will tell you what Shu **believes**.", zh: "接下來由曾新告訴大家阿樹相信什麼。",
+        tip: "說的時候轉身看向曾新、用手比一下，把話交給他。" },
+    ] },
+  ],
+  words: [
+    { w: "everyone", kk: "[ˋɛvrɪ͵wʌn]", s: "EV·ery·one", zh: "每個人" },
+    { w: "introduce", kk: "[͵ɪntrəˋdjus]", s: "in·tro·DUCE", zh: "介紹" },
+    { w: "ideal", kk: "[aɪˋdiəl]", s: "i·DEAL", zh: "理想的" },
+    { w: "influencer", kk: "[ˋɪnflʊənsɚ]", s: "IN·flu·en·cer", zh: "網紅" },
+    { w: "eco", kk: "[ˋiko]", s: "E·co", zh: "環保的" },
+    { w: "honest", kk: "[ˋɑnɪst]", s: "HON·est", zh: "誠實的", tip: "h 不發音" },
+    { w: "perfect", kk: "[ˋpɝfɪkt]", s: "PER·fect", zh: "完美的" },
+    { w: "teammates", kk: "[ˋtim͵mets]", s: "TEAM·mates", zh: "組員" },
+    { w: "believes", kk: "[bɪˋlivz]", s: "be·LIEVES", zh: "相信", tip: "結尾念 z" },
+    { w: "mistake", kk: "[mɪˋstek]", s: "mis·TAKE", zh: "錯誤" },
+    { w: "trust", kk: "[trʌst]", s: "trust", zh: "信任" },
+    { w: "college", kk: "[ˋkɑlɪdʒ]", s: "COL·lege", zh: "大學" },
+    { w: "clothes", kk: "[kloz]", s: "clothes", zh: "衣服", tip: "只有一個音節" },
+    { w: "reusable", kk: "[riˋjuzəbḷ]", s: "re·US·a·ble", zh: "可重複使用的" },
+    { w: "platforms", kk: "[ˋplæt͵fɔrmz]", s: "PLAT·forms", zh: "平台" },
+    { w: "experiments", kk: "[ɪkˋspɛrəmənts]", s: "ex·PER·i·ments", zh: "實驗" },
+    { w: "plastic", kk: "[ˋplæstɪk]", s: "PLAS·tic", zh: "塑膠" },
+    { w: "Instagram", kk: "[ˋɪnstə͵græm]", s: "IN·sta·gram", zh: "Instagram" },
+    { w: "videos", kk: "[ˋvɪdɪ͵oz]", s: "VID·e·os", zh: "影片", tip: "v 不是 w" },
+    { w: "personality", kk: "[͵pɝsṇˋælətɪ]", s: "per·son·AL·i·ty", zh: "個性" },
+    { w: "traits", kk: "[trets]", s: "traits", zh: "特質" },
+    { w: "cheerful", kk: "[ˋtʃɪrfəl]", s: "CHEER·ful", zh: "開朗的" },
+    { w: "challenge", kk: "[ˋtʃælɪndʒ]", s: "CHAL·lenge", zh: "挑戰" },
+    { w: "laughs", kk: "[læfs]", s: "laughs", zh: "笑", tip: "gh 念 f" },
+    { w: "curious", kk: "[ˋkjʊrɪəs]", s: "CU·ri·ous", zh: "好奇的" },
+    { w: "earth", kk: "[ɝθ]", s: "earth", zh: "地球", tip: "捲舌＋咬舌" },
+    { w: "expensive", kk: "[ɪkˋspɛnsɪv]", s: "ex·PEN·sive", zh: "貴的" },
+    { w: "cheap", kk: "[tʃip]", s: "cheap", zh: "便宜的", tip: "長音，不是 chip" },
+  ],
+  tips: [
+    { t: "th 咬舌音", d: "舌尖輕輕放在上下牙齒中間吹氣。不要念成 s、f 或 d。\n你的稿子裡有：three、Third、earth（無聲 θ）；the、these、Then、that、That’s（有聲 ð）。",
+      ex: ["three", "Third, she is curious.", "these are my teammates", "That’s who Shu is."] },
+    { t: "字尾的子音要念出來", d: "中文的字很少用子音結尾，所以台灣學生常把字尾吃掉，或多念一個「ㄜ」。\n念清楚但不要加音：parts、traits、experiments、posts、laughs、clothes [kloz]。",
+      ex: ["four parts", "three personality traits", "she just laughs", "second-hand clothes"] },
+    { t: "連音", d: "前一個字用子音結尾、下一個字用母音開頭時，要連在一起念，聽起來才自然。\n稿子裡標 ‿ 的地方就是連音。",
+      ex: ["Shu is an eco influencer.", "just like us", "Shu is like a friend", "she says it"] },
+    { t: "重音", d: "英文多音節的字有一個音節要念得比較重、比較長，念錯重音別人會聽不懂。\n重點單字頁有每個字的重音，大寫的那一節就是重音。",
+      ex: ["influencer", "introduce", "personality", "experiments", "reusable"] },
+    { t: "問句的語調", d: "Who、Why 這種疑問詞開頭的問句，句尾往下 ↘。\n可以用 Yes／No 回答的問句（Is this…?），句尾往上 ↗。",
+      ex: ["So, who is Shu?", "Why did we make Shu?", "Is this good for the earth?"] },
+    { t: "停頓和換氣", d: "逗號停半拍，句號停一拍，換投影片時停兩拍、看一下觀眾。\n長句先想好在哪裡換氣，不要一口氣衝完。",
+      ex: ["Because many young people love the earth, but they think living green is too expensive, too hard, or only for perfect people."] },
+  ],
+  fixes: [
+    { from: "She says honest is better than perfect", to: "She says being honest is better than being perfect.",
+      why: "honest 是形容詞，不能直接當主詞。改成 being honest（誠實這件事）才是完整的句子；也可以說 honesty is better than perfection。" },
+    { from: "When a challenge fails, she just laugh.", to: "When a challenge fails, she just laughs.",
+      why: "主詞是 she（第三人稱單數），現在式動詞要加 s。" },
+    { from: "Shu has three personality traits.（中文練習稿寫「四個」）", to: "以英文為準：三個（cheerful、honest、curious）",
+      why: "中文練習稿多了一個「不愛管人」，英文稿沒有這段。上台念英文，所以照英文的三個就好。" },
+  ],
+  stage: [
+    "上台前深呼吸，第一句 Good morning, everyone. 說完先看一圈觀眾再往下念。",
+    "介紹組員時，念到誰的名字就用手比向誰。",
+    "看到 Slide 2、3、4、5 的時候換投影片，換完停一下再開口。",
+    "念不出來或忘詞時，看一下提示卡的開頭幾個字就好，不用道歉，繼續往下說。",
+    "最後一句交棒時轉身看曾新，讓他自然接下去。",
+  ],
+};
+
+// 英文句子：顯示用 HTML、念的時候分成英文和中文（名字）幾段
+function enHTML(s) {
+  return esc(s)
+    .replace(/\{zh:([^}]+)\}/g, '<span class="en-name" title="用中文念">$1</span>')
+    .replace(/\*\*([^*]+)\*\*/g, '<b class="en-st">$1</b>')
+    .replace(/‿/g, '<span class="en-link" aria-hidden="true">‿</span>');
+}
+function enParts(s) {
+  const parts = [];
+  s.split(/(\{zh:[^}]+\})/).forEach((seg) => {
+    if (!seg) return;
+    const m = seg.match(/^\{zh:([^}]+)\}$/);
+    if (m) parts.push({ t: m[1], lang: "zh" });
+    else {
+      const t = seg.replace(/\*\*/g, "").replace(/‿/g, " ").trim();
+      if (t && /[A-Za-z0-9]/.test(t)) parts.push({ t, lang: "en" });
+    }
+  });
+  return parts;
+}
+const enPlain = (s) => s.replace(/\{zh:([^}]+)\}/g, "$1").replace(/\*\*/g, "").replace(/‿/g, " ");
+// 提示卡：只露出開頭三個字
+function enCue(s) {
+  const words = enPlain(s).split(/\s+/);
+  return esc(words.slice(0, 3).join(" ")) + (words.length > 3 ? " …" : "");
+}
+
+// 一句話裡英文、中文名字分段依序念
+let partsToken = 0;
+function speakParts(parts, el, after, rateOverride) {
+  const my = ++partsToken;
+  let i = 0;
+  const next = () => {
+    if (my !== partsToken) return;
+    if (i >= parts.length) { if (after) after(); return; }
+    const p = parts[i++];
+    speak(p.t, el, next, rateOverride, p.lang);
+  };
+  next();
+}
+function cancelParts() { partsToken++; if (synth) synth.cancel(); }
+
+// ---- 連續播放（全文／跟讀）----
+let enAuto = null; // { rows, i, paused, shadow, timer }
+function enShadowMs(row) {
+  const words = enPlain(row._line.en).split(/\s+/).length;
+  return Math.max(1800, words * 520 / (rate || 0.9) + 800);
+}
+function enUpdate() {
+  const play = $("en-play"), shadow = $("en-shadow"), stop = $("en-stop"), status = $("en-status");
+  if (!play) return;
+  const st = !enAuto ? "idle" : enAuto.paused ? "paused" : "playing";
+  const pos = enAuto ? Math.min(enAuto.i + 1, enAuto.rows.length) + "/" + enAuto.rows.length : "";
+  const label = (btn, isShadow, idleText) => {
+    const mine = enAuto && enAuto.shadow === isShadow;
+    btn.setAttribute("aria-pressed", String(!!mine && st === "playing"));
+    btn.querySelector("span").textContent = !mine ? idleText : st === "playing" ? "暫停 " + pos : "繼續 " + pos;
+    btn.querySelector("svg").innerHTML = mine && st === "playing" ? ICON_PAUSE : ICON_PLAY;
+  };
+  label(play, false, "全文播放");
+  label(shadow, true, "跟讀模式");
+  stop.hidden = st === "idle";
+  status.textContent = !enAuto ? "" : enAuto.shadow
+    ? (st === "paused" ? "已暫停" : "聽一句，換你跟著念一句")
+    : (st === "paused" ? "已暫停" : "播放中");
+}
+function enClearTurn() { document.querySelectorAll(".en-row.your-turn").forEach((r) => r.classList.remove("your-turn")); }
+function enStop() {
+  if (!enAuto) return;
+  clearTimeout(enAuto.timer);
+  enAuto = null;
+  cancelParts();
+  enClearTurn();
+  enUpdate();
+}
+function enStep(ap) {
+  if (enAuto !== ap || ap.paused) return;
+  if (ap.i >= ap.rows.length) { enStop(); return; }
+  const row = ap.rows[ap.i];
+  enUpdate();
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  row.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+  speakParts(row._parts, row, () => {
+    if (enAuto !== ap || ap.paused) return;
+    if (ap.shadow) {
+      row.classList.add("your-turn");
+      ap.timer = setTimeout(() => { row.classList.remove("your-turn"); ap.i++; enStep(ap); }, enShadowMs(row));
+    } else {
+      ap.i++;
+      ap.timer = setTimeout(() => enStep(ap), 350);
+    }
+  });
+}
+function enStart(shadow) {
+  if (enAuto && enAuto.shadow === shadow) {
+    if (enAuto.paused) { enAuto.paused = false; enStep(enAuto); }
+    else { enAuto.paused = true; clearTimeout(enAuto.timer); cancelParts(); enClearTurn(); enUpdate(); }
+    return;
+  }
+  enStop();
+  const rows = Array.from(document.querySelectorAll("#en-script .en-row"));
+  if (!rows.length) return;
+  enAuto = { rows, i: 0, paused: false, shadow, timer: null };
+  stopAll();
+  enStep(enAuto);
+}
+
+// ---- 計時 ----
+const enTimer = { start: 0, elapsed: 0, iv: null };
+const fmtTime = (ms) => { const s = Math.floor(ms / 1000); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+function enTimerPaint() {
+  const el = $("en-time");
+  if (!el) return;
+  const ms = enTimer.elapsed + (enTimer.iv ? Date.now() - enTimer.start : 0);
+  el.textContent = fmtTime(ms);
+  el.dataset.state = ms > 180000 ? "over" : ms > 165000 ? "near" : "ok";
+  $("en-timer-btn").textContent = enTimer.iv ? "暫停計時" : ms ? "繼續計時" : "開始計時";
+}
+function enTimerToggle() {
+  if (enTimer.iv) { enTimer.elapsed += Date.now() - enTimer.start; clearInterval(enTimer.iv); enTimer.iv = null; }
+  else { enTimer.start = Date.now(); enTimer.iv = setInterval(enTimerPaint, 250); }
+  enTimerPaint();
+}
+function enTimerPause() {
+  if (!enTimer.iv) return;
+  enTimer.elapsed += Date.now() - enTimer.start;
+  clearInterval(enTimer.iv);
+  enTimer.iv = null;
+}
+
+// ---- 畫面 ----
+let enTab = ["read", "words", "tips", "stage", "fix"].includes(store.get("enTab")) ? store.get("enTab") : "read";
+let enCueMode = store.get("enCue") === "1";
+const EN_TABS = [["read", "逐句跟讀"], ["words", "重點單字"], ["tips", "發音技巧"], ["stage", "上台演練"], ["fix", "稿子修正"]];
+
+function enRow(line, withTips) {
+  const row = document.createElement("div");
+  row.className = "en-row" + (enCueMode ? " cue" : "");
+  row._line = line;
+  row._parts = enParts(line.en);
+  const main = document.createElement("button");
+  main.type = "button";
+  main.className = "en-main";
+  main.innerHTML =
+    '<span class="en-text">' + enHTML(line.en) + "</span>" +
+    '<span class="en-cue">' + enCue(line.en) + "</span>" +
+    '<span class="en-zh">' + esc(line.zh) + "</span>" +
+    (line.fix ? '<span class="en-fix">已修正・' + esc(line.fix) + "</span>" : "") +
+    (withTips && line.tip ? '<span class="en-tip"><b>發音</b>' + esc(line.tip) + "</span>" : "");
+  main.setAttribute("aria-label", "播放：" + enPlain(line.en));
+  main.addEventListener("click", () => {
+    enStop();
+    row.classList.remove("cue");
+    speakParts(row._parts, row);
+  });
+  const btns = document.createElement("div");
+  btns.className = "en-btns";
+  btns.innerHTML =
+    '<button type="button" class="play" aria-label="正常速度播放">' + PLAY_ICON + "</button>" +
+    '<button type="button" class="slow-btn" aria-label="慢速播放">慢</button>';
+  btns.children[0].addEventListener("click", () => { enStop(); speakParts(row._parts, row); });
+  btns.children[1].addEventListener("click", () => { enStop(); speakParts(row._parts, row, null, 0.6); });
+  row.appendChild(main);
+  row.appendChild(btns);
+  return row;
+}
+function enScript(withTips) {
+  const wrap = document.createElement("div");
+  wrap.id = "en-script";
+  wrap.className = "en-script";
+  EN_SHU.slides.forEach((sl) => {
+    const head = document.createElement("div");
+    head.className = "en-slide";
+    head.innerHTML = '<span class="en-slide-n">' + (typeof sl.n === "number" ? "Slide " + sl.n : sl.n) + "</span><span>" + esc(sl.zh) + "</span>";
+    wrap.appendChild(head);
+    const list = document.createElement("div");
+    list.className = "en-lines";
+    sl.lines.forEach((line) => list.appendChild(enRow(line, withTips)));
+    wrap.appendChild(list);
+  });
+  return wrap;
+}
+function enModeBar() {
+  const bar = document.createElement("div");
+  bar.className = "modebar";
+  const wrap = document.createElement("div");
+  wrap.className = "seg small";
+  [[false, "全文"], [true, "提示卡（背稿用）"]].forEach(([v, label]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = label;
+    b.setAttribute("aria-pressed", String(v === enCueMode));
+    b.addEventListener("click", () => { enCueMode = v; store.set("enCue", v ? "1" : "0"); renderEnglish(); });
+    wrap.appendChild(b);
+  });
+  bar.appendChild(wrap);
+  return bar;
+}
+
+function renderEnglish() {
+  enStop();
+  const box = $("guide");
+  box.innerHTML = "";
+  const head = document.createElement("div");
+  head.className = "g-head";
+  head.innerHTML =
+    '<button type="button" class="link g-back">‹ 教學目錄</button>' +
+    '<span class="eyebrow">英文口語報告・' + esc(EN_SHU.part) + "</span>" +
+    "<h2>" + esc(EN_SHU.title) + "</h2>" +
+    '<p class="g-sub en-sub">' + esc(EN_SHU.speaker) + "・Slide 1–5 加交棒・約 3 分鐘</p>";
+  head.querySelector(".g-back").addEventListener("click", () => go("guide"));
+  box.appendChild(head);
+
+  const plan = document.createElement("details");
+  plan.className = "panel en-plan";
+  plan.innerHTML = "<summary>建議的練習步驟</summary><ol>" +
+    "<li>到「上台演練」按「全文播放」聽兩遍，抓住整段的節奏。</li>" +
+    "<li>「逐句跟讀」每句先按「慢」聽一次、再聽正常速度，跟著念三次。</li>" +
+    "<li>「重點單字」把重音念對，特別是 influencer、personality、experiments。</li>" +
+    "<li>「上台演練」用跟讀模式練，熟了再切到提示卡背稿。</li>" +
+    "<li>開計時器從頭念到尾，目標 3 分鐘內。可以用手機錄音聽聽自己。</li></ol>";
+  box.appendChild(plan);
+
+  const tabs = document.createElement("div");
+  tabs.className = "seg en-tabs";
+  tabs.setAttribute("role", "tablist");
+  EN_TABS.forEach(([id, label]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = label;
+    b.setAttribute("aria-pressed", String(id === enTab));
+    b.addEventListener("click", () => { enTab = id; store.set("enTab", id); renderEnglish(); });
+    tabs.appendChild(b);
+  });
+  box.appendChild(tabs);
+
+  if (enTab === "read") {
+    box.appendChild(enModeBar());
+    const hint = document.createElement("p");
+    hint.className = "hint";
+    hint.innerHTML = enCueMode
+      ? "提示卡只露出每句開頭，先自己念念看，再點一下聽答案。"
+      : '<b class="en-st">藍色粗體</b>要加重，<span class="en-link">‿</span> 要連在一起念，<span class="en-name">名字</span>用中文念。點一句就會念，「慢」是慢速。';
+    box.appendChild(hint);
+    box.appendChild(enScript(!enCueMode));
+  } else if (enTab === "words") {
+    const hint = document.createElement("p");
+    hint.className = "hint";
+    hint.textContent = "大寫的那一節是重音，要念得比較重、比較長。點一下聽發音。";
+    box.appendChild(hint);
+    const grid = document.createElement("div");
+    grid.className = "en-words";
+    EN_SHU.words.forEach((w) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "en-word";
+      b.innerHTML =
+        '<span class="en-w">' + esc(w.w) + "</span>" +
+        '<span class="en-s">' + w.s.split("·").map((syl) => (/^[A-Z]+$/.test(syl) && w.s.includes("·") ? "<b>" + esc(syl) + "</b>" : esc(syl))).join("·") + "</span>" +
+        '<span class="en-kk">' + esc(w.kk) + "</span>" +
+        '<span class="en-wzh">' + esc(w.zh) + (w.tip ? "・" + esc(w.tip) : "") + "</span>";
+      b.setAttribute("aria-label", "播放：" + w.w);
+      b.addEventListener("click", () => { enStop(); speak(w.w, b, null, 0.75, "en"); });
+      grid.appendChild(b);
+    });
+    box.appendChild(grid);
+  } else if (enTab === "tips") {
+    EN_SHU.tips.forEach((tp, i) => {
+      const sec = document.createElement("section");
+      sec.className = "panel";
+      sec.innerHTML = '<h3><span class="gq-n">' + (i + 1) + "</span> " + esc(tp.t) + '</h3><p class="d-info">' + esc(tp.d) + "</p>";
+      const ex = document.createElement("div");
+      ex.className = "ex-list";
+      tp.ex.forEach((t) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "ex";
+        b.innerHTML = '<span class="text"><span class="en-text">' + esc(t) + '</span></span><span class="play">' + PLAY_ICON + "</span>";
+        b.setAttribute("aria-label", "播放：" + t);
+        b.addEventListener("click", () => { enStop(); speak(t, b, null, null, "en"); });
+        ex.appendChild(b);
+      });
+      sec.appendChild(ex);
+      box.appendChild(sec);
+    });
+  } else if (enTab === "stage") {
+    const ctl = document.createElement("section");
+    ctl.className = "panel en-stage";
+    ctl.innerHTML =
+      '<div class="en-ctl">' +
+        '<button type="button" class="pill" id="en-play" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true">' + ICON_PLAY + "</svg><span>全文播放</span></button>" +
+        '<button type="button" class="pill" id="en-shadow" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true">' + ICON_PLAY + "</svg><span>跟讀模式</span></button>" +
+        '<button type="button" class="pill stop-pill" id="en-stop" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10H7z"/></svg><span>停止</span></button>' +
+      "</div>" +
+      '<p class="hint" id="en-status" role="status"></p>' +
+      '<div class="en-timer"><span class="en-time" id="en-time">0:00</span><span class="hint">目標 3:00 內</span>' +
+        '<button type="button" class="ghost small-btn" id="en-timer-btn">開始計時</button>' +
+        '<button type="button" class="link" id="en-timer-reset">重設</button></div>';
+    box.appendChild(ctl);
+    $("en-play").onclick = () => enStart(false);
+    $("en-shadow").onclick = () => enStart(true);
+    $("en-stop").onclick = enStop;
+    $("en-timer-btn").onclick = enTimerToggle;
+    $("en-timer-reset").onclick = () => { enTimerPause(); enTimer.elapsed = 0; enTimerPaint(); };
+    enTimerPaint();
+    if (enTimer.iv) { clearInterval(enTimer.iv); enTimer.iv = setInterval(enTimerPaint, 250); }
+    box.appendChild(enModeBar());
+    box.appendChild(enScript(false));
+    const tips = document.createElement("section");
+    tips.className = "panel";
+    tips.innerHTML = "<h3>上台小提醒</h3><ul class=\"en-checklist\">" + EN_SHU.stage.map((t) => "<li>" + esc(t) + "</li>").join("") + "</ul>";
+    box.appendChild(tips);
+    enUpdate();
+  } else if (enTab === "fix") {
+    const hint = document.createElement("p");
+    hint.className = "hint";
+    hint.textContent = "這幾個地方我在練習稿裡已經改好了。投影片上如果也有這些句子，記得跟組員說一聲。";
+    box.appendChild(hint);
+    EN_SHU.fixes.forEach((f) => {
+      const sec = document.createElement("section");
+      sec.className = "panel en-fixcard";
+      sec.innerHTML =
+        '<div class="en-from"><span class="tag-bad">原稿</span>' + esc(f.from) + "</div>" +
+        '<div class="en-to"><span class="tag-ok">建議</span>' + esc(f.to) + "</div>" +
+        '<p class="hint">' + esc(f.why) + "</p>";
+      box.appendChild(sec);
+    });
+  }
+}
+
 // ---- 切換畫面 ----
 function render(hash) {
   closeDetail();
   stopAll();
+  enStop();
+  enTimerPause();
   if (synth) synth.cancel();
   quiz.token = null;
   const isQuiz = hash === "quiz";
